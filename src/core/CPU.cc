@@ -5,6 +5,14 @@
 #include "Disassembler.h"
 #include "glog/logging.h"
 
+#ifdef PSW_IN_BYTE
+#define gFlag(c) getFlag(StatusFlag::c)
+#define sFlag(v, c) setFlag((v), StatusFlag::c)
+#else  // PSW_IN_BYTE
+#define gFlag(c) flag_##c##_
+#define sFlag(v, c) flag_##c##_ = (v)
+#endif  // PSW_IN_BYTE
+
 namespace hn {
 // 0 implies unused opcode
 const int OperationCycles[0x100] = {
@@ -40,16 +48,11 @@ void CPU::Reset(Address start_addr) {
 }
 
 void CPU::interrupt(InterruptType type) {
-#ifdef PSW_IN_BYTE
-  if (getFlag(StatusFlag::I) && type != NMI && type != BRK)
-#else   // PSW_IN_BYTE
-  if (flag_I_ && type != NMI && type != BRK)
-#endif  // PSW_IN_BYTE
-  {
+  if (gFlag(I) && type != IT_NMI && type != IT_BRK) {
     return;
   }
 
-  if (type == BRK) {
+  if (type == IT_BRK) {
     // Add one if BRK, a quirk of 6502
     ++reg_PC_;
   }
@@ -59,23 +62,21 @@ void CPU::interrupt(InterruptType type) {
 
 #ifdef PSW_IN_BYTE
   pushStack(psw_ | ((type == BRK) << 4));
-  setFlag(true, StatusFlag::I);
 #else   // PSW_IN_BYTE
   Byte flags = flag_N_ << 7 | flag_V_ << 6 |
                1 << 5 |              // unused bit, supposed to be always 1
                (type == BRK) << 4 |  // B flag set if BRK
                flag_D_ << 3 | flag_I_ << 2 | flag_Z_ << 1 | flag_C_;
   pushStack(flags);
-
-  flag_I_ = true;
 #endif  // PSW_IN_BYTE
+  sFlag(true, I);
 
   switch (type) {
-    case IRQ:
-    case BRK:
+    case IT_IRQ:
+    case IT_BRK:
       reg_PC_ = readAddress(IRQVector);
       break;
-    case NMI:
+    case IT_NMI:
       reg_PC_ = readAddress(NMIVector);
       break;
   }
@@ -91,13 +92,8 @@ void CPU::pushStack(Byte value) {
 Byte CPU::popStack() { return bus_.read(0x100 | ++reg_SP_); }
 
 void CPU::setZN(Byte value) {
-#ifdef PSW_IN_BYTE
-  setFlag(!value, StatusFlag::Z);
-  setFlag(value & 0x80, StatusFlag::N);
-#else   // PSW_IN_BYTE
-  flag_Z_ = !value;
-  flag_N_ = value & 0x80;
-#endif  // PSW_IN_BYTE
+  sFlag(!value, Z);
+  sFlag(value & 0x80, N);
 }
 
 void CPU::setPageCrossed(Address a, Address b, int inc) {
@@ -136,17 +132,22 @@ void CPU::Step() {
           << "CYC:" << std::setw(3) << std::setfill(' ') << std::dec
           << ((cycles_ - 1) * 3) % 341 << std::endl;
 
-  // Check IRQ or NMI
-  if (TEST_BITS(irq_flag_, 1)) {
-    CLR_BIT(irq_flag_, 1);
-    interrupt(IRQ);
+  // Check and run IRQ or NMI
+  if (TEST_BITS(irq_flag_, IT_NMI)) {
+    CLR_BIT(irq_flag_, IT_NMI);
+    interrupt(IT_NMI);
     return;
+  } else if (!gFlag(I)) {
+    // if (!IF_SET && (mInterruptFlag & (~NMI_PENING))) {
+    if (TEST_BIT(irq_flag_, IT_IRQ)) {
+      // CLR_BIT(irq_flag_, IT_IRQ_ONCE); //一次性触发的
+      interrupt(IT_IRQ);
+      return;
+    }
   }
 
   old_PC_ = reg_PC_;
   Byte opcode = bus_.read(reg_PC_++);
-  // LOG(INFO) << "opcode " << int(opcode);
-
   auto CycleLength = OperationCycles[opcode];
 
   // Using short-circuit evaluation, call the other function only if the first
@@ -170,7 +171,7 @@ bool CPU::executeImplied(Byte opcode) {
     case NOP:
       break;
     case BRK:
-      interrupt(BRK);
+      interrupt(IT_BRK);
       break;
     case JSR:
       // Push address of next instruction - 1, thus reg_PC_ + 1 instead of
@@ -279,57 +280,29 @@ bool CPU::executeImplied(Byte opcode) {
       setZN(reg_X_);
       break;
     case CLC:
-#ifdef PSW_IN_BYTE
-      setFlag(false, StatusFlag::C);
-#else   // PSW_IN_BYTE
-      flag_C_ = false;
-#endif  // PSW_IN_BYTE
+      sFlag(false, C);
       break;
     case SEC:
-#ifdef PSW_IN_BYTE
-      setFlag(true, StatusFlag::C);
-#else   // PSW_IN_BYTE
-      flag_C_ = true;
-#endif  // PSW_IN_BYTE
+      sFlag(true, C);
       break;
     case CLI:
-#ifdef PSW_IN_BYTE
-      setFlag(false, StatusFlag::I);
-#else   // PSW_IN_BYTE
-      flag_I_ = false;
-#endif  // PSW_IN_BYTE
+      sFlag(false, I);
       break;
     case SEI:
-#ifdef PSW_IN_BYTE
-      setFlag(true, StatusFlag::I);
-#else   // PSW_IN_BYTE
-      flag_I_ = true;
-#endif  // PSW_IN_BYTE
+      sFlag(true, I);
       break;
     case CLD:
-#ifdef PSW_IN_BYTE
-      setFlag(false, StatusFlag::D);
-#else   // PSW_IN_BYTE
-      flag_D_ = false;
-#endif  // PSW_IN_BYTE
+      sFlag(false, D);
       break;
     case SED:
-#ifdef PSW_IN_BYTE
-      setFlag(true, StatusFlag::D);
-#else   // PSW_IN_BYTE
-      flag_D_ = true;
-#endif  // PSW_IN_BYTE
+      sFlag(true, D);
       break;
     case TYA:
       reg_A_ = reg_Y_;
       setZN(reg_A_);
       break;
     case CLV:
-#ifdef PSW_IN_BYTE
-      setFlag(false, StatusFlag::V);
-#else   // PSW_IN_BYTE
-      flag_V_ = false;
-#endif  // PSW_IN_BYTE
+      sFlag(false, V);
       break;
     case TXA:
       reg_A_ = reg_X_;
@@ -366,35 +339,19 @@ bool CPU::executeBranch(Byte opcode) {
   switch (opcode >> BranchOnFlagShift) {
     case Negative:
       // JL / JNL
-#ifdef PSW_IN_BYTE
-      branch = !(branch ^ getFlag(StatusFlag::N));
-#else   // PSW_IN_BYTE
-      branch = !(branch ^ flag_N_);
-#endif  // PSW_IN_BYTE
+      branch = !(branch ^ gFlag(N));
       break;
     case Overflow:
       // JO / JNO
-#ifdef PSW_IN_BYTE
-      branch = !(branch ^ getFlag(StatusFlag::V));
-#else   // PSW_IN_BYTE
-      branch = !(branch ^ flag_V_);
-#endif  // PSW_IN_BYTE
+      branch = !(branch ^ gFlag(V));
       break;
     case Carry:
       // JC / JNC
-#ifdef PSW_IN_BYTE
-      branch = !(branch ^ getFlag(StatusFlag::C));
-#else   // PSW_IN_BYTE
-      branch = !(branch ^ flag_C_);
-#endif  // PSW_IN_BYTE
+      branch = !(branch ^ gFlag(C));
       break;
     case Zero:
       // JZ / JNZ
-#ifdef PSW_IN_BYTE
-      branch = !(branch ^ getFlag(StatusFlag::Z));
-#else   // PSW_IN_BYTE
-      branch = !(branch ^ flag_Z_);
-#endif  // PSW_IN_BYTE
+      branch = !(branch ^ gFlag(Z));
       break;
     default:
       return false;
@@ -480,18 +437,12 @@ bool CPU::executeType1(Byte opcode) {
     case ADC: {
       Byte operand = bus_.read(location);
       std::uint16_t sum = reg_A_ + operand;
-#ifdef PSW_IN_BYTE
-      sum += +getFlag(StatusFlag::C);
+      sum += +gFlag(C);
       // Carry forward or UNSIGNED overflow
-      setFlag(sum & 0x100, StatusFlag::C);
+      sFlag(sum & 0x100, C);
       // SIGNED overflow, would only happen if the sign of sum is
       // different from BOTH the operands
-      setFlag((reg_A_ ^ sum) & (operand ^ sum) & 0x80, StatusFlag::V);
-#else   // PSW_IN_BYTE
-      sum += +flag_C_;
-      flag_C_ = sum & 0x100;
-      flag_V_ = (reg_A_ ^ sum) & (operand ^ sum) & 0x80;
-#endif  // PSW_IN_BYTE
+      sFlag((reg_A_ ^ sum) & (operand ^ sum) & 0x80, V);
       reg_A_ = static_cast<Byte>(sum);
       setZN(reg_A_);
     } break;
@@ -506,29 +457,19 @@ bool CPU::executeType1(Byte opcode) {
       // High carry means "no borrow", thus negate and subtract
       std::uint16_t subtrahend = bus_.read(location),
                     diff = reg_A_ - subtrahend;
-#ifdef PSW_IN_BYTE
-      diff -= +!getFlag(StatusFlag::C);
+      diff -= +!gFlag(C);
       // if the ninth bit is 1, the resulting number is negative => borrow =>
       // low carry
-      setFlag(!(diff & 0x100), StatusFlag::C);
+      sFlag(!(diff & 0x100), C);
       // Same as ADC, except instead of the subtrahend,
       // substitute with it's one complement
-      setFlag((reg_A_ ^ diff) & (~subtrahend ^ diff) & 0x80, StatusFlag::V);
-#else   // PSW_IN_BYTE
-      diff -= +!flag_C_;
-      flag_C_ = !(diff & 0x100);
-      flag_V_ = (reg_A_ ^ diff) & (~subtrahend ^ diff) & 0x80;
-#endif  // PSW_IN_BYTE
+      sFlag((reg_A_ ^ diff) & (~subtrahend ^ diff) & 0x80, V);
       reg_A_ = diff;
       setZN(diff);
     } break;
     case CMP: {
       std::uint16_t diff = reg_A_ - bus_.read(location);
-#ifdef PSW_IN_BYTE
-      setFlag(!(diff & 0x100), StatusFlag::C);
-#else   // PSW_IN_BYTE
-      flag_C_ = !(diff & 0x100);
-#endif  // PSW_IN_BYTE
+      sFlag(!(diff & 0x100), C);
       setZN(diff);
     } break;
     default:
@@ -591,28 +532,16 @@ bool CPU::executeType2(Byte opcode) {
     case ASL:
     case ROL:
       if (addr_mode == Accumulator) {
-        bool prev_C =
-#ifdef PSW_IN_BYTE
-            getFlag(StatusFlag::C);
-        setFlag(reg_A_ & 0x80, StatusFlag::C);
-#else   // PSW_IN_BYTE
-            flag_C_;
-        flag_C_ = reg_A_ & 0x80;
-#endif  // PSW_IN_BYTE
+        bool prev_C = gFlag(C);
+        sFlag(reg_A_ & 0x80, C);
         reg_A_ <<= 1;
         // If Rotating, set the bit-0 to the the previous carry
         reg_A_ = reg_A_ | (prev_C && (op == ROL));
         setZN(reg_A_);
       } else {
         operand = bus_.read(location);
-        bool prev_C =
-#ifdef PSW_IN_BYTE
-            getFlag(StatusFlag::C);
-        setFlag(operand & 0x80, StatusFlag::C);
-#else   // PSW_IN_BYTE
-            flag_C_;
-        flag_C_ = operand & 0x80;
-#endif  // PSW_IN_BYTE
+        bool prev_C = gFlag(C);
+        sFlag(operand & 0x80, C);
         operand = operand << 1 | (prev_C && (op == ROL));
         setZN(operand);
         bus_.write(location, operand);
@@ -621,28 +550,16 @@ bool CPU::executeType2(Byte opcode) {
     case LSR:
     case ROR:
       if (addr_mode == Accumulator) {
-        bool prev_C =
-#ifdef PSW_IN_BYTE
-            getFlag(StatusFlag::C);
-        setFlag(reg_A_ & 1, StatusFlag::C);
-#else   // PSW_IN_BYTE
-            flag_C_;
-        flag_C_ = reg_A_ & 1;
-#endif  // PSW_IN_BYTE
+        bool prev_C = gFlag(C);
+        sFlag(reg_A_ & 1, C);
         reg_A_ >>= 1;
         // If Rotating, set the bit-7 to the previous carry
         reg_A_ = reg_A_ | (prev_C && (op == ROR)) << 7;
         setZN(reg_A_);
       } else {
         operand = bus_.read(location);
-        bool prev_C =
-#ifdef PSW_IN_BYTE
-            getFlag(StatusFlag::C);
-        setFlag(operand & 1, StatusFlag::C);
-#else   // PSW_IN_BYTE
-            flag_C_;
-        flag_C_ = operand & 1;
-#endif  // PSW_IN_BYTE
+        bool prev_C = gFlag(C);
+        sFlag(operand & 1, C);
         operand = operand >> 1 | ((prev_C && (op == ROR)) << 7);
         setZN(operand);
         bus_.write(location, operand);
@@ -707,15 +624,9 @@ bool CPU::executeType0(Byte opcode) {
   switch (OPACTION(opcode, 0)) {
     case BIT:
       operand = bus_.read(location);
-#ifdef PSW_IN_BYTE
-      setFlag(!(reg_A_ & operand), StatusFlag::Z);
-      setFlag(operand & 0x40, StatusFlag::V);
-      setFlag(operand & 0x80, StatusFlag::N);
-#else   // PSW_IN_BYTE
-      flag_Z_ = !(reg_A_ & operand);
-      flag_V_ = operand & 0x40;
-      flag_N_ = operand & 0x80;
-#endif  // PSW_IN_BYTE
+      sFlag(!(reg_A_ & operand), Z);
+      sFlag(operand & 0x40, V);
+      sFlag(operand & 0x80, N);
       break;
     case STY:
       bus_.write(location, reg_Y_);
@@ -726,20 +637,12 @@ bool CPU::executeType0(Byte opcode) {
       break;
     case CPY: {
       std::uint16_t diff = reg_Y_ - bus_.read(location);
-#ifdef PSW_IN_BYTE
-      setFlag(!(diff & 0x100), StatusFlag::C);
-#else   // PSW_IN_BYTE
-      flag_C_ = !(diff & 0x100);
-#endif  // PSW_IN_BYTE
+      sFlag(!(diff & 0x100), C);
       setZN(diff);
     } break;
     case CPX: {
       std::uint16_t diff = reg_X_ - bus_.read(location);
-#ifdef PSW_IN_BYTE
-      setFlag(!(diff & 0x100), StatusFlag::C);
-#else   // PSW_IN_BYTE
-      flag_C_ = !(diff & 0x100);
-#endif  // PSW_IN_BYTE
+      sFlag(!(diff & 0x100), C);
       setZN(diff);
     } break;
     default:
@@ -767,39 +670,29 @@ void CPU::DebugDump() {
             << "%Y=" << std::setw(2) << +reg_Y_ << " "
             << "%PSW=" << std::setw(2) << psw << " "
             << "%SP:" << std::setw(2) << +reg_SP_ << " "
-            << "CYC:" << std::setw(3) << std::setfill(' ') << std::dec
-            << ((cycles_ - 1) * 3) % 341 << " cyc:" << cycles_ << std::endl;
+            << "CYC:" << std::dec << ((cycles_ - 1) * 3) % 341
+            << " cyc:" << cycles_ << std::endl;
   Disassembler disass(bus_);
   Address addr = old_PC_ & 0xff00;
-  for (Address cnt = 0; addr <= ((old_PC_ & 0xff00) | 0xff) && cnt < 256;
-       cnt++) {
-    disass.OneInstr(addr, addr == old_PC_);
-    addr = disass.pc();
-  }
+  disass.DisassembleOnePage(addr, old_PC_, 256);
 
   addr = reg_PC_ & 0xff00;
   LOG(INFO) << "current: " << std::hex << addr;
-  for (Address cnt = 0; addr <= ((reg_PC_ & 0xff00) | 0xff) && cnt < 256;
-       cnt++) {
-    disass.OneInstr(addr, addr == reg_PC_);
-    addr = disass.pc();
-  }
+  disass.DisassembleOnePage(addr, reg_PC_, 256);
+
+  addr = readAddress(ResetVector);
+  LOG(INFO) << "Main entry: " << std::hex << addr;
+  disass.DisassembleOnePage(addr, old_PC_, 64);
 
   addr = readAddress(IRQVector);
   LOG(INFO) << "IRQ: " << std::hex << addr;
-  for (Address cnt = 0; cnt < 64; cnt++) {
-    disass.OneInstr(addr, addr == old_PC_);
-    addr = disass.pc();
-  }
+  disass.DisassembleOnePage(addr, old_PC_, 64);
 
   addr = readAddress(NMIVector);
   LOG(INFO) << "NMI: " << std::hex << addr;
-  for (Address cnt = 0; cnt < 64; cnt++) {
-    disass.OneInstr(addr, addr == old_PC_);
-    addr = disass.pc();
-  }
+  disass.DisassembleOnePage(addr, old_PC_, 64);
 
-  LOG(INFO) << "Stack:";
+  LOG(INFO) << "Stack:[" << (0xfd - reg_SP_) << "]";
   for (Address sp = 0x1fd; sp > (0x100 + reg_SP_); sp--) {
     LOG(INFO) << std::hex << std::setfill('0') << std::setw(4) << sp << "["
               << std::setw(2) << (0x1fd - sp) << "] " << std::setw(2)

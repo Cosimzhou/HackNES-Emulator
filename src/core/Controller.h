@@ -1,8 +1,8 @@
 #pragma once
 #include <SFML/Window.hpp>
 #include <cstdint>
-#include <vector>
 
+#include "PeripheralDevices.h"
 #include "common.h"
 
 namespace hn {
@@ -16,33 +16,22 @@ typedef struct JoystickConfig {
 
 typedef std::vector<sf::Keyboard::Key> KeyboardBinding;
 
-typedef struct ControllerInputConfig {
+class ControllerInputConfig : public JoypadInputConfig {
+ public:
+  ControllerInputConfig();
+  virtual bool isPressed(int) const;
+
   KeyboardBinding keyboard_;
   JoystickConfig joystick_;
+};
 
-  bool isPressed(int) const;
-  ControllerInputConfig();
-
-} ControllerInputConfig;
-
-class Controller {
+class Controller : public VirtualJoypad {
  public:
-  enum Buttons {
-    A,
-    B,
-    Select,
-    Start,
-    Up,
-    Down,
-    Left,
-    Right,
-    TotalButtons,
-  };
   Controller();
 
-  void strobe(Byte b);
-  Byte read();
-  void setKeyBindings(const ControllerInputConfig &keys);
+  virtual void strobe(Byte b);
+  virtual Byte read();
+  virtual void setKeyBindings(const JoypadInputConfig &keys);
 
  private:
   bool strobe_;

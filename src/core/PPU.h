@@ -4,9 +4,8 @@
 #include <functional>
 
 #include "MainBus.h"
-#include "PaletteColors.h"
+#include "PeripheralDevices.h"
 #include "PictureBus.h"
-#include "VirtualScreen.h"
 
 #define PPUSTATUS_IN_BYTE
 #define PPUCONTROL_IN_BYTE
@@ -18,11 +17,9 @@ constexpr int ScanlineVisibleDots = 256;
 
 class PPU {
  public:
-  PPU(PictureBus &bus, VirtualScreen &screen);
+  PPU(MainBus &mainBus, PictureBus &bus, VirtualScreen &screen);
   void Step();
   void Reset();
-
-  void setInterruptCallback(std::function<void(void)> cb);
 
   void doDMA(const Byte *page_ptr);
 
@@ -44,6 +41,8 @@ class PPU {
 
   PictureBus &bus() const { return bus_; }
 
+  std::size_t frameIndex() const { return frameIndex_; }
+
  protected:
   void postRender();
   void preRender();
@@ -55,10 +54,9 @@ class PPU {
  private:
   Byte read(Address addr);
 
+  MainBus &mainBus_;
   PictureBus &bus_;
   VirtualScreen &screen_;
-
-  std::function<void(void)> vblankCallback_;
 
   enum State { PreRender, Render, PostRender, VerticalBlank } pipelineState_;
   int cycle_;
@@ -120,7 +118,7 @@ class PPU {
   std::size_t frameIndex_;
   std::vector<Byte> spriteMemory_;
   std::vector<Byte> scanlineSprites_;
-  std::vector<std::vector<sf::Color>> pictureBuffer_;
+  std::vector<std::vector<Color>> pictureBuffer_;
 };
 
 }  // namespace hn

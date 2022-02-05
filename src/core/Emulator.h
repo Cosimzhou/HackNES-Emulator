@@ -44,8 +44,8 @@ class Emulator {
 
   void DebugDump();
 
-  VirtualScreen emulatorScreen_;
-  VirtualSpeaker emulatorSpeaker_;
+  VirtualScreenSfml emulatorScreen_;
+  VirtualSpeakerSfml emulatorSpeaker_;
 
   MainBus bus_;
   PictureBus pictureBus_;

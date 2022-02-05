@@ -5,13 +5,13 @@
 
 #include "AudioChannel.h"
 #include "MainBus.h"
-#include "VirtualSpeaker.h"
+#include "PeripheralDevices.h"
 
 namespace hn {
 
 class APU {
  public:
-  APU(MainBus &bus, CPU &cpu, VirtualSpeaker &speaker);
+  APU(MainBus &bus, VirtualSpeaker &speaker);
 
   void Reset();
   void Step();

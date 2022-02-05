@@ -229,6 +229,8 @@ bool MainBus::setPPU(PPU *ppu) {
   return true;
 }
 
+Mapper *MainBus::mapper() const { return mapper_; }
+
 bool MainBus::setMapper(Mapper *mapper) {
   mapper_ = mapper;
 

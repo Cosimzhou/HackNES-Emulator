@@ -6,7 +6,6 @@ namespace hn {
 class Mapper_4 : public Mapper {
  public:
   Mapper_4(Cartridge &cart);
-  ~Mapper_4();
 
   virtual void Reset() override;
   virtual void writePRG(Address addr, Byte value);
@@ -18,6 +17,7 @@ class Mapper_4 : public Mapper {
   virtual std::string mapper_name() const { return "MMC3"; }
 
   virtual void DebugDump() override;
+  virtual void Hsync(int scanline) override;
 
  protected:
   void updatePPUBank();
@@ -45,6 +45,7 @@ class Mapper_4 : public Mapper {
 
   Byte nIRQCounter;
   Byte nIRQReload;
+  Byte nLatch_;
 };
 
 }  // namespace hn

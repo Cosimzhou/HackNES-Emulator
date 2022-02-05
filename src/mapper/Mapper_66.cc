@@ -42,7 +42,7 @@ Byte Mapper_66::readPRG(Address addr) {  //
 }
 
 Byte Mapper_66::readCHR(Address addr) {
-  if (cartridge_.getVROM().size() == 0) {
+  if (cartridge_.getVROM().empty()) {
     LOG(ERROR) << "no vrom but read" << std::hex << addr;
     return cartridge_.getVROM()[addr];
   } else {
@@ -58,18 +58,7 @@ Byte Mapper_66::readCHR(Address addr) {
 
 void Mapper_66::writeCHR(Address addr, Byte value) {
   VLOG(1) << "writeCHR " << std::hex << addr << " " << value;
-  //
 }
 
-void Mapper_66::DebugDump() {
-  // LOG(INFO) << "chrRam:" << std::boolalpha << usesCharacterRAM_
-  //          << " chrRamSz:" << characterRAM_.size() << " 8kRom:" << rom_num_
-  //          << " cReg:" << +targetRegister_ << " prgBankM:" << bPRGBankMode
-  //          << " chrInv:" << bCHRInversion << " irqAct:" << bIRQActive
-  //          << " irqEn:" << bIRQEnable << " irqUpd:" << bIRQUpdate
-  //          << " irqCnt:" << +nIRQCounter << " irqRel:" << +nIRQReload
-  //          << " regs:" << DumpVector(pRegister)
-  //          << " prgBank:" << DumpVector(pPRGBank)
-  //          << " chrBank:" << DumpVector(pCHRBank);
-}
+void Mapper_66::DebugDump() {}
 };  // namespace hn

@@ -22,13 +22,13 @@ PatternViewer::PatternViewer()
     : screenScale_(1),
       colorPattern_(0),
       pageNum_(0),
-      pictureBuffer_(256, std::vector<sf::Color>(256, sf::Color::Black)) {}
+      pictureBuffer_(256, std::vector<Color>(256, 0)) {}
 
 void PatternViewer::run() {
   window_.create(sf::VideoMode(256 * screenScale_, 256 * screenScale_),
                  "Pattern Viewer", sf::Style::Titlebar | sf::Style::Close);
   window_.setVerticalSyncEnabled(true);
-  emulatorScreen_.create(256, 256, screenScale_, sf::Color::White);
+  emulatorScreen_.create(256, 256, screenScale_, 0x0e);
 
   UpdateImage();
 
@@ -100,7 +100,7 @@ void PatternViewer::UpdateImage() {
       for (size_t y = 0; y < 8; y++) {
         int c = (!!(vrom[addr + y] & mask)) |
                 ((!!(vrom[addr + y + 8] & mask)) << 1);
-        pictureBuffer_[x + tileX][y + lineX] = sf::Color(colors[maskIndex[c]]);
+        pictureBuffer_[x + tileX][y + lineX] = colors[maskIndex[c]];
       }
     }
 

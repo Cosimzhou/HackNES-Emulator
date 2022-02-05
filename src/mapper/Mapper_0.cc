@@ -10,7 +10,7 @@ void Mapper_0::Reset() {
     oneBank_ = false;
   }
 
-  usesCharacterRAM_ = cartridge_.getVROM().size() == 0;
+  usesCharacterRAM_ = cartridge_.getVROM().empty();
 
   if (usesCharacterRAM_) {
     characterRAM_.resize(0x2000);

@@ -6,12 +6,10 @@ namespace hn {
 
 Mapper_7::Mapper_7(Cartridge &cart) : Mapper(cart, 7) {}
 
-Mapper_7::~Mapper_7() {}
-
 void Mapper_7::Reset() {
   prgBank_ = 0;
   prgRom_ = cartridge_.getROM().size() >> 15;
-  chrVRam_ = cartridge_.getVROM().size() == 0;
+  chrVRam_ = cartridge_.getVROM().empty();
 
   LOG(INFO) << "chrvram: " << chrVRam_ << " prg:" << +prgRom_;
   if (chrVRam_) {
@@ -61,15 +59,5 @@ void Mapper_7::writeCHR(Address addr, Byte value) {
   //
 }
 
-void Mapper_7::DebugDump() {
-  // LOG(INFO) << "chrRam:" << std::boolalpha << usesCharacterRAM_
-  //          << " chrRamSz:" << characterRAM_.size() << " 8kRom:" << rom_num_
-  //          << " cReg:" << +targetRegister_ << " prgBankM:" << bPRGBankMode
-  //          << " chrInv:" << bCHRInversion << " irqAct:" << bIRQActive
-  //          << " irqEn:" << bIRQEnable << " irqUpd:" << bIRQUpdate
-  //          << " irqCnt:" << +nIRQCounter << " irqRel:" << +nIRQReload
-  //          << " regs:" << DumpVector(pRegister)
-  //          << " prgBank:" << DumpVector(pPRGBank)
-  //          << " chrBank:" << DumpVector(pCHRBank);
-}
+void Mapper_7::DebugDump() {}
 };  // namespace hn

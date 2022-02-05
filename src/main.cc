@@ -4,6 +4,7 @@
 
 DEFINE_string(path, "", "Specify ROM path");
 DEFINE_bool(recording, false, "Specify recording mode");
+DEFINE_bool(print, false, "Specify recording mode");
 DEFINE_string(record, "", "Specify recording file");
 DEFINE_double(vrate, 0,
               "Set the width of the emulation screen (height is set "
@@ -54,6 +55,10 @@ int main(int argc, char **argv) {
   if (!emulator.LoadCartridge(FLAGS_path)) {
     LOG(ERROR) << "Load ROM failed: " << FLAGS_path << std::endl;
     return 1;
+  }
+
+  if (FLAGS_print) {
+    return 0;
   }
 
   if (!FLAGS_record.empty()) {

@@ -1,15 +1,20 @@
 #pragma once
 
 #include <SFML/Audio.hpp>
+#include "PeripheralDevices.h"
 
 namespace hn {
 
-class VirtualSpeaker : public sf::SoundStream {
+class VirtualSpeakerSfml : public VirtualSpeaker, public sf::SoundStream {
  public:
-  VirtualSpeaker(unsigned int channel = 1, unsigned int sample_rate = 44100);
-  virtual ~VirtualSpeaker() = default;
+  VirtualSpeakerSfml(unsigned int channel = 1,
+                     unsigned int sample_rate = 44100);
+  virtual ~VirtualSpeakerSfml() = default;
 
-  void PushSample(std::int16_t *data, size_t count);
+  virtual void PushSample(std::int16_t *data, size_t count);
+
+  virtual void Play();
+  virtual void Stop();
 
  protected:
   virtual bool onGetData(sf::SoundStream::Chunk &data);

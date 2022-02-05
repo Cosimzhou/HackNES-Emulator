@@ -9,6 +9,7 @@
 
 #define LEN_ARRAY(a) (sizeof(a) / sizeof(a[0]))
 #define TEST_BITS(var, bits) ((var & (bits)) == (bits))
+#define TEST_BIT(var, bits) ((var & (bits)) != 0)
 #define CLR_BIT(var, bits) var &= ~(bits)
 #define SET_BIT(var, bits) var |= (bits)
 #define SWAP_BIT(var, vsrc, bits) \
@@ -33,6 +34,8 @@ namespace hn {
 using Byte = std::uint8_t;
 using Address = std::uint16_t;
 using FileAddress = std::uint32_t;
+using Color = Byte;
+using RGBA = std::uint32_t;
 
 template <typename T>
 std::string DumpVector(const std::vector<T>& vec) {

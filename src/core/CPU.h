@@ -8,29 +8,27 @@ namespace hn {
 
 class CPU {
  public:
-  enum InterruptType { IRQ, NMI, BRK };
-
   CPU(MainBus &mem);
-
-  // Assuming sequential execution, for asynchronously calling this with
-  // Execute, further work needed
-  void interrupt(InterruptType type);
 
   void Step();
   void Reset();
   void Reset(Address start_addr);
-  void log();
 
   void skipDMACycles();
 
-  void ClearIRQ() { irq_flag_ &= ~1; }
-  void TryIRQ() { irq_flag_ |= 1; }
+  void ClearIRQ() { CLR_BIT(irq_flag_, IT_IRQ); }
+  void TryIRQ() { SET_BIT(irq_flag_, IT_IRQ); }
+  void TryNMI() { SET_BIT(irq_flag_, IT_NMI); }
 
   size_t clock_cycles() const { return cycles_; }
 
   void DebugDump();
 
  private:
+  // Assuming sequential execution, for asynchronously calling this with
+  // Execute, further work needed
+  void interrupt(InterruptType type);
+
   // Instructions are split into five sets to make decoding easier.
   // These functions return true if they succeed
   bool executeImplied(Byte opcode);
@@ -50,10 +48,11 @@ class CPU {
 
 #ifdef PSW_IN_BYTE
   inline void setFlag(bool val, StatusFlag flag) {
+    Byte bflag = static_cast<Byte>(flag);
     if (val) {
-      psw_ |= static_cast<Byte>(flag);
+      SET_BIT(psw_, bflag);
     } else {
-      psw_ &= ~static_cast<Byte>(flag);
+      CLR_BIT(psw_, bflag);
     }
   }
 

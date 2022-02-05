@@ -1,9 +1,7 @@
 #pragma once
 
-#include <SFML/Config.hpp>
-
 // Colors in RGBA (8 bit colors)
-const sf::Uint32 colors[] = {
+const hn::RGBA colors[] = {
     0x666666ff, 0x002a88ff, 0x1412a7ff, 0x3b00a4ff, 0x5c007eff, 0x6e0040ff,
     0x6c0600ff, 0x561d00ff, 0x333500ff, 0x0b4800ff, 0x005200ff, 0x004f08ff,
     0x00404dff, 0x000000ff, 0x000000ff, 0x000000ff, 0xadadadff, 0x155fd9ff,

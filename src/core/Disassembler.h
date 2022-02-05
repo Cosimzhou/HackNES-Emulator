@@ -12,6 +12,8 @@ class Disassembler {
 
   void Step();
   bool OneInstr(Address pc, bool star = false);
+  void DisassembleOnePage(Address start, Address pc, int limit);
+
   void setPC(Address pc) { PC_ = pc; }
   Address pc() const { return PC_; }
 
@@ -21,6 +23,8 @@ class Disassembler {
   bool explainType1(Byte opcode, char* buffer);
   bool explainType2(Byte opcode, char* buffer);
   bool explainBranch(Byte opcode, char* buffer);
+
+  bool disassemble(bool star, char* buffer);
 
  private:
   Address PC_;

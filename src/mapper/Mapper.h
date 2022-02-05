@@ -14,6 +14,10 @@ enum NameTableMirroring {
   OneScreenHigher,
 };
 
+// Reference:
+//
+//  https://wiki.nesdev.org/w/index.php?title=Mapper
+//
 class Mapper {
  public:
   enum Type {
@@ -21,7 +25,10 @@ class Mapper {
     SxROM = 1,
     UxROM = 2,
     CNROM = 3,
-    // Id4ROM = 4,
+    MMC3 = 4,
+    AxROM = 7,
+    HundredInOne = 15,
+    GxROM = 66,
   };
 
   Mapper(Cartridge &cart, Byte t) : cartridge_(cart), type_(t){};
@@ -42,8 +49,14 @@ class Mapper {
   virtual std::string mapper_name() const = 0;
   virtual void DebugDump() {}
 
+  Cartridge &cartridge() { return cartridge_; }
+
+  virtual void Hsync(int scanline) {}
+
  protected:
   void ChangeNTMirroring(NameTableMirroring mirror);
+  void FireIRQ();
+  void StopIRQ();
 
   Cartridge &cartridge_;
   Byte type_;

@@ -1,14 +1,16 @@
 #include "VirtualScreen.h"
 
+#include "PaletteColors.h"
 #include "glog/logging.h"
 
 namespace hn {
-void VirtualScreen::create(unsigned int w, unsigned int h, float pixel_size,
-                           sf::Color color) {
+void VirtualScreenSfml::create(unsigned int w, unsigned int h, float pixel_size,
+                               Color bgColor) {
   vertices_.resize(w * h * 6);
   screenSize_ = {w, h};
   vertices_.setPrimitiveType(sf::Triangles);
   pixelSize_ = pixel_size;
+  sf::Color color(colors[bgColor]);
   for (std::size_t x = 0; x < w; ++x) {
     for (std::size_t y = 0; y < h; ++y) {
       auto index = (x * screenSize_.y + y) * 6;
@@ -53,7 +55,7 @@ void VirtualScreen::create(unsigned int w, unsigned int h, float pixel_size,
   }
 }
 
-void VirtualScreen::resize(float pixel_size) {
+void VirtualScreenSfml::resize(float pixel_size) {
   pixelSize_ = pixel_size;
   for (std::size_t x = 0; x < screenSize_.x; ++x) {
     for (std::size_t y = 0; y < screenSize_.y; ++y) {
@@ -84,9 +86,10 @@ void VirtualScreen::resize(float pixel_size) {
   }
 }
 
-void VirtualScreen::setPixel(std::size_t x, std::size_t y, sf::Color color) {
+void VirtualScreenSfml::setPixel(std::size_t x, std::size_t y, Color pcolor) {
   auto index = (x * screenSize_.y + y) * 6;
   if (index < vertices_.getVertexCount()) {
+    sf::Color color(colors[pcolor]);
     // Triangle-1
     vertices_[index].color = color;      // top-left
     vertices_[index + 1].color = color;  // top-right
@@ -99,8 +102,8 @@ void VirtualScreen::setPixel(std::size_t x, std::size_t y, sf::Color color) {
   }
 }
 
-void VirtualScreen::draw(sf::RenderTarget &target,
-                         sf::RenderStates states) const {
+void VirtualScreenSfml::draw(sf::RenderTarget &target,
+                             sf::RenderStates states) const {
   target.draw(vertices_, states);
 
   if (counter_ > 0) {
@@ -109,7 +112,7 @@ void VirtualScreen::draw(sf::RenderTarget &target,
   }
 }
 
-void VirtualScreen::setTip(const std::string &msg) {
+void VirtualScreenSfml::setTip(const std::string &msg) {
   counter_ = 60;
 
   tipText_.setFont(font_);

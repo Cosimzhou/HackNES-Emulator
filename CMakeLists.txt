@@ -44,6 +44,10 @@ if(BUILD_STATIC)
 endif()
 
 find_package(glog REQUIRED)
+if ("${GLOG_LIBRARIES}" STREQUAL "")
+	set(GLOG_LIBRARIES glog)
+endif()
+
 find_package(gflags REQUIRED)
 
 # Find SFML
@@ -63,6 +67,9 @@ endif()
 
 set(CLI_DEPENDENCIES ${GLOG_LIBRARIES} ${GFLAGS_LIBRARIES})
 set(HN_DEPENDENCIES ${SFML_LIBRARIES} ${SFML_DEPENDENCIES} ${CLI_DEPENDENCIES})
+
+add_executable(etest "${PROJECT_SOURCE_DIR}/src/etest.cpp")
+target_link_libraries(etest ${HN_DEPENDENCIES})
 
 add_executable(patternv ${SOURCES} "${PROJECT_SOURCE_DIR}/src/pv-main.cc")
 target_link_libraries(patternv ${HN_DEPENDENCIES})

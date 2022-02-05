@@ -9,8 +9,8 @@ namespace hn {
 Emulator::Emulator()
     : emulatorSpeaker_(),
       cpu_(bus_),
-      ppu_(pictureBus_, emulatorScreen_),
-      apu_(bus_, cpu_, emulatorSpeaker_),
+      ppu_(bus_, pictureBus_, emulatorScreen_),
+      apu_(bus_, emulatorSpeaker_),
       goldfinger_(bus_),
       screenScale_(2.f),
       cycleTimer_(),
@@ -40,8 +40,6 @@ Emulator::Emulator()
       !bus_.setWriteCallback(OAMDATA, [&](Byte b) { ppu_.setOAMData(b); })) {
     LOG(ERROR) << "Critical error: Failed to set I/O callbacks";
   }
-
-  ppu_.setInterruptCallback([&]() { cpu_.interrupt(CPU::NMI); });
 }
 
 void Emulator::run() {
@@ -65,11 +63,11 @@ void Emulator::run() {
                                NESVideoHeight * screenScale_),
                  "Hack NES", sf::Style::Titlebar | sf::Style::Close);
   window_.setVerticalSyncEnabled(true);
-  emulatorScreen_.create(NESVideoWidth, NESVideoHeight, screenScale_,
-                         sf::Color::White);
+  emulatorScreen_.create(NESVideoWidth, NESVideoHeight, screenScale_, 0x30);
 
   Reset();
   sf::Event event;
+  size_t frameIdx = 0;
   bool focus = true, pause = false;
   while (window_.isOpen()) {
     while (window_.pollEvent(event)) {
@@ -111,7 +109,6 @@ void Emulator::run() {
         // Log::get().setLevel(Info);
       } else if (focus && event.type == sf::Event::KeyReleased &&
                  event.key.code == sf::Keyboard::F5) {
-        // Log::get().setLevel(InfoVerbose);
         switch (workMode_) {
           case PLAYING:
             workMode_ = RECORDING;
@@ -122,6 +119,7 @@ void Emulator::run() {
             emulatorScreen_.setTip("Start replay");
             record_.Save();
             Reset();
+            frameIdx = 0;
             break;
           default:
             break;
@@ -153,8 +151,11 @@ void Emulator::run() {
         elapsedTime_ -= cpuCycleDuration_;
       }
 
-      window_.draw(emulatorScreen_);
-      window_.display();
+      if (frameIdx < ppu_.frameIndex()) {
+        window_.draw(emulatorScreen_);
+        window_.display();
+        frameIdx = ppu_.frameIndex();
+      }
     } else {
       sf::sleep(sf::milliseconds(1000 / 60));
     }

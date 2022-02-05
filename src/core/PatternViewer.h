@@ -25,7 +25,7 @@ class PatternViewer {
   void UpdateImage();
 
  private:
-  VirtualScreen emulatorScreen_;
+  VirtualScreenSfml emulatorScreen_;
 
   Cartridge cartridge_;
 
@@ -33,7 +33,7 @@ class PatternViewer {
   float screenScale_;
   size_t colorPattern_;
   size_t pageNum_;
-  std::vector<std::vector<sf::Color>> pictureBuffer_;
+  std::vector<std::vector<Color>> pictureBuffer_;
 };
 
 }  // namespace hn

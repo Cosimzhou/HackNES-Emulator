@@ -60,11 +60,9 @@ bool Cartridge::loadFromFile(std::string path) {
     return false;
   }
 
-  CartridgeHeader header;
   LOG(INFO) << "Reading ROM from path: " << path;
 
-  // Header
-  // header.resize(0x10);
+  CartridgeHeader header;
   if (!romFile.read(reinterpret_cast<char *>(&header), 0x10)) {
     LOG(ERROR) << "Reading iNES header failed.";
     return false;
@@ -99,16 +97,24 @@ bool Cartridge::loadFromFile(std::string path) {
   extendedRAM_ = header.extendedRAM();
   LOG(INFO) << "Extended (CPU) RAM: " << std::boolalpha << extendedRAM_;
 
-  if (header[6] & 0x4) {
-    LOG(ERROR) << "Trainer is not supported.";
+  if (header.ntsc()) {
+    LOG(INFO) << "ROM is NTSC compatible.";
+  } else {
+    LOG(ERROR) << "PAL ROM not supported.";
     return false;
   }
 
-  if ((header[0xA] & 0x3) == 0x2 || (header[0xA] & 0x1)) {
-    LOG(ERROR) << "PAL ROM not supported.";
+  if (header.trainer()) {
+    trainer_.resize(0x200);
+    if (!romFile.read(reinterpret_cast<char *>(&trainer_[0]),
+                      trainer_.size())) {
+      LOG(ERROR) << "Reading trainer from image file failed.";
+      return false;
+    }
+    LOG(INFO) << "Trainer is present.";
+    LOG(ERROR) << "Trainer is not supported.";
     return false;
-  } else
-    LOG(INFO) << "ROM is NTSC compatible.\n";
+  }
 
   // PRG-ROM 16KB banks
   PRG_ROM_.resize(0x4000 * banks);

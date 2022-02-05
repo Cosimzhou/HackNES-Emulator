@@ -2,12 +2,15 @@
 
 #include "Mapper_0.h"
 #include "Mapper_1.h"
+#include "Mapper_15.h"
 #include "Mapper_2.h"
+#include "Mapper_202.h"
 #include "Mapper_3.h"
 #include "Mapper_4.h"
 #include "Mapper_66.h"
 #include "Mapper_7.h"
 
+#include "../core/CPU.h"
 #include "../core/MainBus.h"
 #include "../core/PPU.h"
 
@@ -38,8 +41,14 @@ std::unique_ptr<Mapper> Mapper::createMapper(Mapper::Type mapper_t,
     case 7:
       ret.reset(new Mapper_7(cart));
       break;
+    case 15:
+      ret.reset(new Mapper_15(cart));
+      break;
     case 66:
       ret.reset(new Mapper_66(cart));
+      break;
+    case 202:
+      ret.reset(new Mapper_202(cart));
       break;
     default:
       break;
@@ -51,5 +60,8 @@ void Mapper::ChangeNTMirroring(NameTableMirroring mirror) {
   cartridge_.setNameTableMirroring(mirror);
   cartridge_.bus()->ppu()->bus().updateMirroring();
 }
+
+void Mapper::FireIRQ() { cartridge_.bus()->cpu()->TryIRQ(); }
+void Mapper::StopIRQ() { cartridge_.bus()->cpu()->ClearIRQ(); }
 
 }  // namespace hn

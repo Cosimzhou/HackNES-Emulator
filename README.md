@@ -15,13 +15,16 @@ CMake 3.21
 # Support
 Mapper:
 * NROM 0
-* NROM 1
-* NROM 2
-* NROM 3
-* NROM 4
+* SxROM 1
+* UxROM 2
+* CNROM 3
+* MMC3 4
 * AxROM 7
 * GxROM 66
 
+# Reference
+
+https://wiki.nesdev.org/w/index.php?title=Nesdev_Wiki
 
 # Screensnaps
 

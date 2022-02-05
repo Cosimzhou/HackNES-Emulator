@@ -3,9 +3,9 @@
 #include "Mapper.h"
 
 namespace hn {
-class Mapper_7 : public Mapper {
+class Mapper_15 : public Mapper {
  public:
-  Mapper_7(Cartridge &cart);
+  Mapper_15(Cartridge &cart);
 
   virtual void Reset() override;
   virtual void writePRG(Address addr, Byte value);
@@ -14,13 +14,14 @@ class Mapper_7 : public Mapper {
   virtual Byte readCHR(Address addr);
   virtual void writeCHR(Address addr, Byte value);
 
-  virtual std::string mapper_name() const { return "AxROM"; }
+  virtual std::string mapper_name() const { return "100InROM"; }
 
   virtual void DebugDump() override;
 
  protected:
  private:
-  Byte prgBank_;
+  Byte prgBankMode_;
+  std::vector<FileAddress> bankAddr_;
   std::vector<Byte> vRam_;
   Byte prgRom_;
   bool chrVRam_;

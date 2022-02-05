@@ -27,6 +27,12 @@ const auto NMIVector = 0xfffa;
 const auto ResetVector = 0xfffc;
 const auto IRQVector = 0xfffe;
 
+enum InterruptType {
+  IT_BRK = 0x01,
+  IT_NMI = 0x02,
+  IT_IRQ = 0x04,
+};
+
 enum BranchOnFlag {
   Negative = 0x00,
   Overflow = 0x01,

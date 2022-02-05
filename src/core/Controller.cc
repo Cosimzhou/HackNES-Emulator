@@ -5,8 +5,8 @@
 namespace hn {
 Controller::Controller() : keyStates_(0), input_() {}
 
-void Controller::setKeyBindings(const ControllerInputConfig &keys) {
-  input_ = keys;
+void Controller::setKeyBindings(const JoypadInputConfig &keys) {
+  input_ = dynamic_cast<const ControllerInputConfig &>(keys);
 
   if (input_.joystick_.inUse) {
     if (!sf::Joystick::isConnected(input_.joystick_.index)) {

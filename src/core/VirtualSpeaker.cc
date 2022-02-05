@@ -12,8 +12,9 @@ sf::Sound sound;
 bool sound_once = false;
 
 constexpr size_t kSampleLeastSize = 1024;
-VirtualSpeaker::VirtualSpeaker(unsigned int channel, unsigned int sample_rate)
-    : queue_index_(0) {
+VirtualSpeakerSfml::VirtualSpeakerSfml(unsigned int channel,
+                                       unsigned int sample_rate)
+    : VirtualSpeaker(channel, sample_rate), queue_index_(0) {
   queue_buffer_.resize(40);
   mute_sample_.resize(kSampleLeastSize * 2, 0);
   chunk_.samples = mute_sample_.data();
@@ -23,7 +24,7 @@ VirtualSpeaker::VirtualSpeaker(unsigned int channel, unsigned int sample_rate)
   setLoop(true);
 }
 
-void VirtualSpeaker::PushSample(std::int16_t *data, size_t count) {
+void VirtualSpeakerSfml::PushSample(std::int16_t *data, size_t count) {
   auto &current_buffer = queue_buffer_[queue_index_];
   if (current_buffer.size() >= kSampleLeastSize) {
     chunk_.samples = current_buffer.data();
@@ -38,14 +39,16 @@ void VirtualSpeaker::PushSample(std::int16_t *data, size_t count) {
   }
 }
 
-bool VirtualSpeaker::onGetData(sf::SoundStream::Chunk &data) {
+bool VirtualSpeakerSfml::onGetData(sf::SoundStream::Chunk &data) {
   data = chunk_;
   VLOG(12) << "get " << chunk_.samples[2] << " ~ " << chunk_.sampleCount;
   return true;
 }
 
-void VirtualSpeaker::onSeek(sf::Time timeOffset) {
+void VirtualSpeakerSfml::onSeek(sf::Time timeOffset) {
   VLOG(12) << timeOffset.asSeconds();
 }
 
+void VirtualSpeakerSfml::Play() { play(); }
+void VirtualSpeakerSfml::Stop() { stop(); }
 }  // namespace hn

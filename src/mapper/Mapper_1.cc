@@ -18,7 +18,7 @@ Mapper_1::Mapper_1(Cartridge &cart)
       secondBankPRG_(nullptr),
       firstBankCHR_(nullptr),
       secondBankCHR_(nullptr) {
-  if (cart.getVROM().size() == 0) {
+  if (cart.getVROM().empty()) {
     usesCharacterRAM_ = true;
     characterRAM_.resize(0x2000);
     LOG(INFO) << "Uses character RAM";
@@ -46,7 +46,7 @@ void Mapper_1::Reset() {
   firstBankCHR_ = nullptr;
   secondBankCHR_ = nullptr;
 
-  if (cartridge_.getVROM().size() == 0) {
+  if (cartridge_.getVROM().empty()) {
     usesCharacterRAM_ = true;
     characterRAM_.resize(0x2000);
     LOG(INFO) << "Uses character RAM";

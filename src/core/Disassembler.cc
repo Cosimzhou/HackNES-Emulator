@@ -10,30 +10,36 @@ Disassembler::Disassembler(MainBus& bus) : bus_(bus) {}
 
 void Disassembler::Step() {
   char buffer[1024];
-  char* buf = sprintf(buffer, "0x%04x\t", PC_) + buffer;
-  Byte opcode = bus_.read(PC_++);
-
-  // Using short-circuit evaluation, call the other function only if the first
-  // failed ExecuteImplied must be called first and ExecuteBranch must be before
-  // ExecuteType0
-  if (!(explainImplied(opcode, buf) || explainBranch(opcode, buf) ||
-        explainType1(opcode, buf) || explainType2(opcode, buf) ||
-        explainType0(opcode, buf))) {
-    //} else {
-    LOG(ERROR) << "Unrecognized opcode: " << std::hex << +opcode;
-    CHECK(false) << "Unrecognized opcode: " << std::hex << +opcode;
-  }
-
-  LOG(INFO) << buffer;
+  disassemble(false, buffer);
 }
 
 bool Disassembler::OneInstr(Address pc, bool star) {
   setPC(pc);
   char buffer[1024];
+
+  if (disassemble(star, buffer)) {
+    LOG(INFO) << buffer;
+    return true;
+  }
+
+  return false;
+}
+
+void Disassembler::DisassembleOnePage(Address addr, Address pc, int limit) {
+  char buffer[1024];
+  PC_ = addr;
+  for (Address end = (PC_ & 0xff00) + 0x100;
+       (PC_ < end || (!end && PC_ > 0x100)) && limit > 0; limit--) {
+    disassemble(PC_ == pc, buffer);
+    LOG(INFO) << buffer;
+  }
+}
+
+bool Disassembler::disassemble(bool star, char* buffer) {
+  Address pc = PC_;
   char* buf = buffer + sprintf(buffer, "%c 0x%04x            \0",
                                (star ? '*' : ' '), PC_);
   Byte opcode = bus_.read(PC_++);
-
   // Using short-circuit evaluation, call the other function only if the first
   // failed ExecuteImplied must be called first and ExecuteBranch must be before
   // ExecuteType0
@@ -47,11 +53,12 @@ bool Disassembler::OneInstr(Address pc, bool star) {
     }
     *buf = ' ';
 
-    LOG(INFO) << buffer;
     return true;
   }
 
-  return true;
+  buf += sprintf(buf, "Unknown Code");
+
+  return false;
 }
 
 bool Disassembler::explainImplied(Byte opcode, char* buffer) {

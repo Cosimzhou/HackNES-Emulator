@@ -3,7 +3,7 @@
 
 namespace hn {
 Mapper_2::Mapper_2(Cartridge &cart) : Mapper(cart, 2), selectPRG_(0) {
-  if (cart.getVROM().size() == 0) {
+  if (cart.getVROM().empty()) {
     usesCharacterRAM_ = true;
     characterRAM_.resize(0x2000);
     LOG(INFO) << "Uses character RAM";
@@ -16,7 +16,7 @@ Mapper_2::Mapper_2(Cartridge &cart) : Mapper(cart, 2), selectPRG_(0) {
 
 void Mapper_2::Reset() {
   selectPRG_ = 0;
-  if (cartridge_.getVROM().size() == 0) {
+  if (cartridge_.getVROM().empty()) {
     usesCharacterRAM_ = true;
     characterRAM_.resize(0x2000);
     LOG(INFO) << "Uses character RAM";

@@ -3,6 +3,7 @@
 #include <cstring>
 #include <ios>
 
+#include "CPU.h"
 #include "common.h"
 #include "glog/logging.h"
 
@@ -46,13 +47,13 @@ constexpr Byte kPPUCtrlLongSprite = 0x20;
 constexpr Byte kPPUCtrlInterrupt = 0x80;
 #endif  // PPUSTATUS_IN_BYTE
 
-PPU::PPU(PictureBus &bus, VirtualScreen &screen)
-    : bus_(bus),
+PPU::PPU(MainBus &mainBus, PictureBus &bus, VirtualScreen &screen)
+    : mainBus_(mainBus),
+      bus_(bus),
       screen_(screen),
       spriteMemory_(64 * 4),
-      pictureBuffer_(
-          ScanlineVisibleDots,
-          std::vector<sf::Color>(VisibleScanlines, sf::Color::Magenta)) {}
+      pictureBuffer_(ScanlineVisibleDots,
+                     std::vector<Color>(VisibleScanlines, 0x24)) {}
 
 void PPU::Reset() {
 #ifdef PPUCONTROL_IN_BYTE
@@ -87,10 +88,6 @@ void PPU::Reset() {
   pipelineState_ = PreRender;
   scanlineSprites_.reserve(8);
   scanlineSprites_.resize(0);
-}
-
-void PPU::setInterruptCallback(std::function<void(void)> cb) {
-  vblankCallback_ = cb;
 }
 
 void PPU::Step() {
@@ -208,6 +205,10 @@ void PPU::render() {
     cycle_ = 0;
   }
 
+  if (cycle_ == 256) {
+    mainBus_.mapper()->Hsync(scanline_);
+  }
+
   if (scanline_ >= VisibleScanlines) {
     // If scanline is greater than 240, it indicates the frame has been done.
     pipelineState_ = PostRender;
@@ -215,6 +216,10 @@ void PPU::render() {
 }
 
 void PPU::postRender() {
+  if (cycle_ == 256) {
+    mainBus_.mapper()->Hsync(scanline_);
+  }
+
   if (cycle_ < ScanlineEndCycle) {
     // If cycle_ is less than 340, wait here.
     return;
@@ -237,7 +242,9 @@ void PPU::postRender() {
 #else   // PPUSTATUS_IN_BYTE
   vblank_ = true;
 #endif  // PPUSTATUS_IN_BYTE
-  if (GEN_INTERRUPT()) vblankCallback_();
+  if (GEN_INTERRUPT()) {
+    mainBus_.cpu()->TryNMI();
+  }
 }
 
 void PPU::renderInScanline() {
@@ -352,7 +359,7 @@ void PPU::renderInScanline() {
   }
 #undef READ_PIXEL
 
-  pictureBuffer_[x][y] = sf::Color(colors[bus_.readPalette(paletteAddr)]);
+  pictureBuffer_[x][y] = bus_.readPalette(paletteAddr);
 }
 
 void PPU::doDMA(const Byte *page_ptr) {
@@ -457,12 +464,6 @@ void PPU::setDataAddress(Byte val) {
     SWAP_BIT(tempAddress_, addr, 0xff00);  // Unset the upper byte
   } else {
     SWAP_BIT(tempAddress_, addr, 0xff);  // Unset the lower byte;
-    // if (VerticalBlank != pipelineState_) {
-    //  LOG(WARNING) << "NVB: " << frameIndex_ << " sc: " << scanline_ << ":"
-    //               << cycle_ << " " << pipelineState_ << " @" << std::hex
-    //               << tempAddress_ << " -> $" << dataAddress_;
-    //}
-
     dataAddress_ = tempAddress_;
   }
   firstWrite_ = !firstWrite_;
@@ -501,7 +502,6 @@ void PPU::DebugDump() {
 #ifdef PPUCONTROL_IN_BYTE
             << " control:" << +ppu_control_
 #endif  // PPUCONTROL_IN_BYTE
-
             << " @" << tempAddress_ << " dataAddr: $" << dataAddress_
             << " 1stW: " << std::boolalpha << firstWrite_
             << " xScl:" << +fineXScroll_ << " addrBuf:" << +dataBuffer_

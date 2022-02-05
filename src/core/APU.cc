@@ -31,7 +31,7 @@ enum {
 //    4, 8, 16, 32, 64, 96, 128, 160, 202, 254, 380, 508, 762, 1016, 2034, 4068,
 //};
 
-APU::APU(MainBus &bus, CPU &cpu, VirtualSpeaker &speaker)
+APU::APU(MainBus &bus, VirtualSpeaker &speaker)
     : bus_(bus), dmc_channel_(bus), speaker_(speaker) {}
 
 void APU::Write(Address address, Byte data) {
@@ -85,16 +85,15 @@ void APU::Write(Address address, Byte data) {
 
 void APU::Reset() {
   VLOG(2) << "APU reset";
-  speaker_.stop();
+  speaker_.Stop();
   noise_.lfsr_ = 1;
-  dmc_channel_.period_ = 428;  // DMC_PERIOD_LIST_NP[0];
+  dmc_channel_.period_ = 428;
 
   sample_cycle_ = 0;
   frame_cycle_ = 0;
   sample_segment_ = 0;
 
-  speaker_.setLoop(true);
-  speaker_.play();
+  speaker_.Play();
 }
 
 uint8_t APU::Read(uint16_t address) {
@@ -124,7 +123,6 @@ inline void APU::ProcessSweepUnit() {
 }
 
 void APU::ProcessFrameCounter() {
-  // FrameCounter++;
   if (mFrame5Step) {
     // l - l - - ->   ++%5   ->   1 2 3 4 0
     // e e e e - ->   ++%5   ->   1 2 3 4 0
@@ -237,7 +235,6 @@ uint8_t APU::MakeSamples(uint32_t cpuCycle) {
   return 0;
 }
 
-/// 长度计数(组)
 inline void APU::ProcessLengthCounter() {
   pulses_[0].ProcessLengthCounter();
   pulses_[1].ProcessLengthCounter();
@@ -245,7 +242,6 @@ inline void APU::ProcessLengthCounter() {
   noise_.ProcessLengthCounter();
 }
 
-/// 包络
 inline void APU::ProcessEnvelope() {
   pulses_[0].ProcessEnvelope();
   pulses_[1].ProcessEnvelope();

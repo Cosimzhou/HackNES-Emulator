@@ -1,52 +1,18 @@
 #include "Mapper_4.h"
-#include <ios>
 
+#include "../core/PPU.h"
 #include "glog/logging.h"
 
 namespace hn {
 
-Mapper_4::Mapper_4(Cartridge &cart) : Mapper(cart, 4) {
-  if (cart.getVROM().size() == 0) {
-    usesCharacterRAM_ = true;
-    characterRAM_.resize(0x2000);
-    LOG(INFO) << "Uses character RAM";
-  } else
-    usesCharacterRAM_ = false;
-
-  targetRegister_ = 0x00;
-  bPRGBankMode = false;
-  bCHRInversion = false;
-
-  bIRQActive = false;
-  bIRQEnable = false;
-  bIRQUpdate = false;
-  nIRQCounter = 0x00;
-  nIRQReload = 0x00;
-
-  pRegister.resize(8);
-  pCHRBank.resize(8);
-  pPRGBank.resize(4);
-
-  pPRGBank[0] = 0;
-  pPRGBank[1] = 1;
-
-  rom_num_ = cart.getROM().size() >> 13;
-  pPRGBank[2] = rom_num_ - 2;
-  pPRGBank[3] = rom_num_ - 1;
-
-  LOG(INFO) << std::hex << pPRGBank[0] << " " << pPRGBank[1] << " "
-            << pPRGBank[2] << " " << pPRGBank[3] << " rom: " << rom_num_;
-}
-
-Mapper_4::~Mapper_4() {}
+Mapper_4::Mapper_4(Cartridge &cart) : Mapper(cart, 4) {}
 
 void Mapper_4::Reset() {
-  if (cartridge_.getVROM().size() == 0) {
-    usesCharacterRAM_ = true;
+  usesCharacterRAM_ = cartridge_.getVROM().empty();
+  if (usesCharacterRAM_) {
     characterRAM_.resize(0x2000);
     LOG(INFO) << "Uses character RAM";
-  } else
-    usesCharacterRAM_ = false;
+  }
 
   targetRegister_ = 0x00;
   bPRGBankMode = false;
@@ -57,6 +23,7 @@ void Mapper_4::Reset() {
   bIRQUpdate = false;
   nIRQCounter = 0x00;
   nIRQReload = 0x00;
+  nLatch_ = 0;
 
   pRegister.resize(8);
   pCHRBank.resize(8);
@@ -71,7 +38,6 @@ void Mapper_4::Reset() {
 }
 
 void Mapper_4::writePRG(Address addr, Byte data) {
-  // VLOG(1) << "writePRG " << std::hex << addr << " " << data;
   switch (addr & 0xe001) {
     case 0x8000:
       // 偶数地址修改映射信息
@@ -97,17 +63,16 @@ void Mapper_4::writePRG(Address addr, Byte data) {
       // TODO:
       break;
     case 0xc000:
-      nIRQReload = data;
+      nLatch_ = data;
       break;
     case 0xc001:
+      nIRQReload = 0xff;
       nIRQCounter = 0x0000;
       break;
     case 0xe000:
       bIRQEnable = false;
       bIRQActive = false;
-      //  IRQ
-      //  TODO:
-      LOG(INFO) << "irq need";
+      StopIRQ();
       break;
     case 0xe001:
       bIRQEnable = true;
@@ -130,7 +95,7 @@ Byte Mapper_4::readPRG(Address addr) {  //
 }
 
 Byte Mapper_4::readCHR(Address addr) {
-  if (cartridge_.getVROM().size() == 0) {
+  if (cartridge_.getVROM().empty()) {
     LOG(ERROR) << "no vrom but read" << std::hex << addr;
     return cartridge_.getVROM()[addr];
   } else {
@@ -145,7 +110,7 @@ Byte Mapper_4::readCHR(Address addr) {
 }
 
 void Mapper_4::writeCHR(Address addr, Byte value) {
-  VLOG(1) << "writeCHR " << std::hex << addr << " " << value;
+  LOG(INFO) << "writeCHR " << std::hex << addr << " " << value;
   //
 }
 
@@ -184,12 +149,32 @@ void Mapper_4::updatePPUBank() {
   }
 }
 
+void Mapper_4::Hsync(int scanline) {
+  // if (cartridge_.bus()->ppu()->getStatus() & 0x18 == 0) return;
+  if (scanline >= 240) {
+    return;
+  }
+
+  if (nIRQReload) {
+    nIRQCounter = nLatch_;
+    nIRQReload = 0;
+  } else if (nIRQCounter > 0)
+    nIRQCounter--;
+
+  if (nIRQCounter == 0) {
+    nIRQReload = 0xFF;
+    if (bIRQEnable) {
+      FireIRQ();
+    }
+  }
+}
+
 void Mapper_4::DebugDump() {
   LOG(INFO) << "chrRam:" << std::boolalpha << usesCharacterRAM_
             << " chrRamSz:" << characterRAM_.size() << " 8kRom:" << rom_num_
             << " cReg:" << +targetRegister_ << " prgBankM:" << bPRGBankMode
             << " chrInv:" << bCHRInversion << " irqAct:" << bIRQActive
-            << " irqEn:" << bIRQEnable << " irqUpd:" << bIRQUpdate
+            << " irqEn:" << bIRQEnable << " latch:" << +nLatch_
             << " irqCnt:" << +nIRQCounter << " irqRel:" << +nIRQReload
             << " regs:" << DumpVector(pRegister)
             << " prgBank:" << DumpVector(pPRGBank)
