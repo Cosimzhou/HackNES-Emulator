@@ -14,6 +14,11 @@ if(CMAKE_COMPILER_IS_GNUCXX OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2")
 endif()
 
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}  -std=c++11")
+  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -std=c++11")
+endif()
+
 # Add directory containing FindSFML.cmake to module path
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules/;${CMAKE_MODULE_PATH};${CMAKE_SOURCE_DIR}")
 
@@ -56,14 +61,15 @@ else()
   message("Make sure the SFML libraries with the same configuration (Release/Debug, Static/Dynamic) exist.\n")
 endif()
 
-add_executable(test src/etest.cpp)
-target_link_libraries(test ${SFML_LIBRARIES} ${SFML_DEPENDENCIES} glog gflags)
+set(CLI_DEPENDENCIES ${GLOG_LIBRARIES} ${GFLAGS_LIBRARIES})
+set(HN_DEPENDENCIES ${SFML_LIBRARIES} ${SFML_DEPENDENCIES} ${CLI_DEPENDENCIES})
 
 add_executable(patternv ${SOURCES} "${PROJECT_SOURCE_DIR}/src/pv-main.cc")
-target_link_libraries(patternv ${SFML_LIBRARIES} ${SFML_DEPENDENCIES} glog gflags)
+target_link_libraries(patternv ${HN_DEPENDENCIES})
 
 add_executable(HackerNES ${SOURCES} "${PROJECT_SOURCE_DIR}/src/main.cc")
-target_link_libraries(HackerNES ${SFML_LIBRARIES} ${SFML_DEPENDENCIES} glog gflags)
+target_link_libraries(HackerNES ${HN_DEPENDENCIES})
+
 
 set_property(TARGET HackerNES PROPERTY CXX_STANDARD 11)
 set_property(TARGET HackerNES PROPERTY CXX_STANDARD_REQUIRED ON)
