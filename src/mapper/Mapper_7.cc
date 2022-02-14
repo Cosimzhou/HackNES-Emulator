@@ -25,7 +25,7 @@ void Mapper_7::writePRG(Address addr, Byte data) {
   ChangeNTMirroring((data & 0x10) ? OneScreenHigher : OneScreenLower);
 }
 
-Byte Mapper_7::readPRG(Address addr) {  //
+Byte Mapper_7::readPRG(Address addr) {
   FileAddress prg_addr = 0;
   if (addr >= 0x8000) {  // 0x2000
     prg_addr = prgBank_;
@@ -54,10 +54,8 @@ void Mapper_7::writeCHR(Address addr, Byte value) {
   if (chrVRam_) {
     vRam_[addr & 0x1fff] = value;
   }
-
-  // VLOG(1) << "writeCHR " << std::hex << addr << " " << value;
-  //
 }
 
 void Mapper_7::DebugDump() {}
+
 };  // namespace hn

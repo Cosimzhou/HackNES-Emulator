@@ -40,11 +40,15 @@ Emulator::Emulator()
       !bus_.setWriteCallback(OAMDATA, [&](Byte b) { ppu_.setOAMData(b); })) {
     LOG(ERROR) << "Critical error: Failed to set I/O callbacks";
   }
+
+  record_.setFinishCallback([&]() {
+    workMode_ = REPLAY;
+    emulatorScreen_.setTip("Start replay");
+  });
 }
 
 void Emulator::run() {
-  mapper_ = Mapper::createMapper(
-      static_cast<Mapper::Type>(cartridge_.getMapper()), cartridge_);
+  mapper_ = Mapper::createMapper(cartridge_.getMapper(), cartridge_);
   if (!mapper_) {
     LOG(ERROR) << "Creating Mapper failed. Probably unsupported.";
     return;
@@ -83,6 +87,16 @@ void Emulator::run() {
       } else if (event.type == sf::Event::LostFocus) {
         focus = false;
         emulatorSpeaker_.stop();
+      } else if (event.type == sf::Event::KeyReleased &&
+                 event.key.code == sf::Keyboard::F12) {
+        sf::Texture texture;
+        texture.create(window_.getSize().x, window_.getSize().y);
+        texture.update(window_);
+
+        sf::Image image = texture.copyToImage();
+        image.saveToFile("/tmp/test.png");
+
+        emulatorScreen_.setTip("Screen captured");
       } else if (event.type == sf::Event::KeyPressed &&
                  event.key.code == sf::Keyboard::F2) {
         pause = !pause;
@@ -182,6 +196,8 @@ void Emulator::XPUTick() {
   // APU
   apu_.Step();
 
+  // clock tick
+  bus_.Tick();
   DDCATCH();
 
   goldfinger_.Patrol();
@@ -189,8 +205,7 @@ void Emulator::XPUTick() {
 
 void Emulator::DMA(Byte page) {
   cpu_.skipDMACycles();
-  auto page_ptr = bus_.getPagePtr(page);
-  ppu_.doDMA(page_ptr);
+  ppu_.doDMA(bus_.getPagePtr(page));
 }
 
 Byte Emulator::ReadJoypad(int no) {
@@ -210,6 +225,8 @@ Byte Emulator::ReadJoypad(int no) {
   return ret;
 }
 
+void Emulator::Pause() {}
+void Emulator::Resume() {}
 void Emulator::setVideoHeight(int height) {
   screenScale_ = height / float(NESVideoHeight);
   LOG(INFO) << "Scale: " << screenScale_ << " set. Screen: "

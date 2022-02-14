@@ -1,5 +1,4 @@
 #include "PatternViewer.h"
-#include "PaletteColors.h"
 #include "glog/logging.h"
 
 #include <chrono>
@@ -100,7 +99,7 @@ void PatternViewer::UpdateImage() {
       for (size_t y = 0; y < 8; y++) {
         int c = (!!(vrom[addr + y] & mask)) |
                 ((!!(vrom[addr + y + 8] & mask)) << 1);
-        pictureBuffer_[x + tileX][y + lineX] = colors[maskIndex[c]];
+        pictureBuffer_[x + tileX][y + lineX] = maskIndex[c];
       }
     }
 

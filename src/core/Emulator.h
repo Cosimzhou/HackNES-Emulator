@@ -36,6 +36,9 @@ class Emulator {
 
   OperatingRecord record_;
 
+  void Pause();
+  void Resume();
+
  private:
   void DMA(Byte page);
   void XPUTick();

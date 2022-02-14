@@ -23,6 +23,7 @@ namespace hn {
 // 9        bit 0     1 for PAL cartridges, otherwise assume NTSC.
 //          bit 1-7   Reserved, must be zeroes!
 // 10-15    Reserved, must be zeroes!
+//
 // 16-...   ROM banks, in ascending order. If a trainer is present, its
 //          512 bytes precede the ROM bank contents.
 //...-EOF   VROM banks, in ascending order.

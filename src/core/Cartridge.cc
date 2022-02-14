@@ -101,7 +101,7 @@ bool Cartridge::loadFromFile(std::string path) {
     LOG(INFO) << "ROM is NTSC compatible.";
   } else {
     LOG(ERROR) << "PAL ROM not supported.";
-    return false;
+    //    return false;
   }
 
   if (header.trainer()) {
@@ -113,7 +113,7 @@ bool Cartridge::loadFromFile(std::string path) {
     }
     LOG(INFO) << "Trainer is present.";
     LOG(ERROR) << "Trainer is not supported.";
-    return false;
+    // return false;
   }
 
   // PRG-ROM 16KB banks

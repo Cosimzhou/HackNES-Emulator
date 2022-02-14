@@ -268,6 +268,18 @@ void PPU::renderInScanline() {
 
       // fetch pattern
       // Each pattern occupies 16 bytes, so multiply by 16
+      //
+      //    Character   Colors      Contents of Pattern Table
+      //    ...*....    00010000    00010000 $10  +-> 00000000 $00
+      //    ..O.O...    00202000    00000000 $00  |   00101000 $28
+      //    .#...#..    03000300    01000100 $44  |   01000100 $44
+      //    O.....O.    20000020    00000000 $00  |   10000010 $82
+      //    *******. -> 11111110 -> 11111110 $FE  |   00000000 $00
+      //    O.....O.    20000020    00000000 $00  |   10000010 $82
+      //    #.....#.    30000030    10000010 $82  |   10000010 $82
+      //    ........    00000000    00000000 $00  |   00000000 $00
+      //                                +---------+
+      //
       // Add fine y /* dataAddress_  y % 8*/
       // set whether the pattern is in the high or low page
       addr = (tile << 4) | ((dataAddress_ >> 12) & 0x7);
@@ -278,6 +290,16 @@ void PPU::renderInScanline() {
       // flag used to calculate final pixel with the sprite pixel
       bgOpaque = bgColor;
 
+      //
+      //    Attribute Tables
+      //   +--------------+----------------+
+      //   |(0,0)  (1,0) 0|  (2,0)  (3,0) 1|
+      //   |(0,1)  (1,1)  |  (2,1)  (3,1)  |
+      //   +--------------+----------------+
+      //   |(0,2)  (1,2) 2|  (2,2)  (3,2) 3|
+      //   |(0,3)  (1,3)  |  (2,3)  (3,3)  |
+      //   +--------------+----------------+
+      //
       // fetch attribute and calculate higher two bits of palette
       // Attribute table start address is 0x23c0.
       addr = 0x23C0 | (dataAddress_ & 0x0C00) | ((dataAddress_ >> 4) & 0x38) |

@@ -27,10 +27,6 @@ enum {
   Pulse1Enable = 1
 };
 
-// static const uint16_t NOISE_PERIOD_LIST[] = {
-//    4, 8, 16, 32, 64, 96, 128, 160, 202, 254, 380, 508, 762, 1016, 2034, 4068,
-//};
-
 APU::APU(MainBus &bus, VirtualSpeaker &speaker)
     : bus_(bus), dmc_channel_(bus), speaker_(speaker) {}
 

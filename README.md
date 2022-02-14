@@ -24,7 +24,8 @@ Mapper:
 
 # Reference
 
-https://wiki.nesdev.org/w/index.php?title=Nesdev_Wiki
+* https://wiki.nesdev.org/w/index.php?title=Nesdev_Wiki
+* http://fms.komkon.org/EMUL8/NES.html
 
 # Screensnaps
 

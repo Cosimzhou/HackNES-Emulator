@@ -16,6 +16,11 @@ void OperatingRecord::Record(int player, size_t cycle, Byte code) {
 }
 
 Byte OperatingRecord::Read(int player, size_t cycle) const {
+  if (cycle > top_cycle_) {
+    if (finish_event_) finish_event_();
+    return 0x40;
+  }
+
   auto &record = joypad_record_[player];
   auto iter = record.find(cycle);
   if (iter != record.end()) {

@@ -46,6 +46,7 @@ class MainBus {
   PPU *ppu() const;
   Mapper *mapper() const;
 
+  void Tick();
   void DebugDump();
   std::string getPageContent(Address page);
 

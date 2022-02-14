@@ -7,8 +7,10 @@
 #include "Mapper_202.h"
 #include "Mapper_3.h"
 #include "Mapper_4.h"
+#include "Mapper_65.h"
 #include "Mapper_66.h"
 #include "Mapper_7.h"
+#include "Mapper_76.h"
 
 #include "../core/CPU.h"
 #include "../core/MainBus.h"
@@ -19,8 +21,7 @@ NameTableMirroring Mapper::getNameTableMirroring() {
   return static_cast<NameTableMirroring>(cartridge_.getNameTableMirroring());
 }
 
-std::unique_ptr<Mapper> Mapper::createMapper(Mapper::Type mapper_t,
-                                             Cartridge &cart) {
+std::unique_ptr<Mapper> Mapper::createMapper(Byte mapper_t, Cartridge &cart) {
   std::unique_ptr<Mapper> ret(nullptr);
   switch (mapper_t) {
     case 0:
@@ -44,8 +45,14 @@ std::unique_ptr<Mapper> Mapper::createMapper(Mapper::Type mapper_t,
     case 15:
       ret.reset(new Mapper_15(cart));
       break;
+    case 65:
+      ret.reset(new Mapper_65(cart));
+      break;
     case 66:
       ret.reset(new Mapper_66(cart));
+      break;
+    case 76:
+      ret.reset(new Mapper_76(cart));
       break;
     case 202:
       ret.reset(new Mapper_202(cart));

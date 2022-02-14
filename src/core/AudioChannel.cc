@@ -45,7 +45,7 @@ void DMCChannel::setEnable(bool enable) {
   }
 }
 
-/// 包络单元
+// 包络单元
 void EnvelopedChannel::ProcessEnvelope() {
   // 写入了第四个寄存器(START 标记了)
   if (start_flag_) {
@@ -170,14 +170,14 @@ void DMCChannel::UpdateDmcBit() {
   }
 }
 
-/// 更新三角波的状态
+// 更新三角波的状态
 void TriangleChannel::UpdateState() {
   // mTriangle.volume = mTriangle.enable;
   // 递增掩码: 长度计数器/线性计数器 有效
   incMask_ = (lengthCounter_ && linearCounter_) ? 0xff : 0;
 }
 
-/// 更新脉冲（方波）的状态
+// 更新脉冲（方波）的状态
 void PulseChannel::UpdateState() {
   // 使能
   if (!enable_) {
@@ -201,16 +201,15 @@ void PulseChannel::UpdateState() {
     volume_ = decay_;
 }
 
-/// 更新噪音的状态
+// 更新噪音的状态
 void NoiseChannel::UpdateState() {
   static const uint16_t NOISE_PERIOD_LIST[] = {
       4, 8, 16, 32, 64, 96, 128, 160, 202, 254, 380, 508, 762, 1016, 2034, 4068,
   };
   // 短模式
   bitsRemaining_ = shortMode_ ? 6 : 1;
-  // 周期
   period_ = NOISE_PERIOD_LIST[periodIndex_ & 0xF];
-  // 使能
+
   if (!enable_) {
     volume_ = 0;
     return;
@@ -220,10 +219,10 @@ void NoiseChannel::UpdateState() {
     volume_ = 0;
     return;
   }
-  // 固定音量
+  // Fixed volume
   if (ctrl6_ & 0x10) {
     volume_ = ctrl6_ & 0xf;
-  } else {  // 包络音量
+  } else {  // envelop volume
     volume_ = decay_;
   }
 }
@@ -264,12 +263,10 @@ void PulseChannel::ProcessLengthCounter() {
 }
 
 void TriangleChannel::ProcessLengthCounter() {
-  // 三角波 长度计数器
   if (!(flagHalt_) && lengthCounter_) --lengthCounter_;
 }
 
 void NoiseChannel::ProcessLengthCounter() {
-  // 噪音-- 长度计数器
   if (!(ctrl6_ & (Byte)0x20) && lengthCounter_) --lengthCounter_;
 }
 
@@ -376,7 +373,7 @@ void DMCChannel::Reset() {
   bytesRemaining_ = length_;
 }
 
-/// 线性计数单元
+// 线性计数单元
 void TriangleChannel::ProcessLinearCounter() {
   if (reload_) {
     linearCounter_ = reloadValue_;

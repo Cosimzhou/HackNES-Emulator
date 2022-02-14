@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <set>
 #include <vector>
 
@@ -18,10 +19,16 @@ class OperatingRecord {
   void Save(const std::string &path);
   void Save();
 
+  void setFinishCallback(std::function<void()> finish) {
+    finish_event_ = finish;
+  }
+
  private:
   std::vector<std::set<size_t>> joypad_record_;
   std::string file_path_;
   size_t top_cycle_;
+
+  std::function<void()> finish_event_;
 };
 
 }  // namespace hn
