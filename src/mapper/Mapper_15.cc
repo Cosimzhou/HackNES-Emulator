@@ -15,10 +15,10 @@ void Mapper_15::Reset() {
   prgBankMode_ = 0;
 
   vRam_.resize(0x2000);
+  std::fill(vRam_.begin(), vRam_.end(), 0);
   chrVRam_ = true;
 
   ChangeNTMirroring(Vertical);
-  LOG(INFO) << "reset";
 }
 
 void Mapper_15::writePRG(Address addr, Byte data) {
@@ -48,12 +48,7 @@ void Mapper_15::writePRG(Address addr, Byte data) {
       break;
   }
 
-  // chrVRam_ = prgBankMode_ == 1 || prgBankMode_ == 2;
-  if (chrVRam_) {
-    vRam_.resize(0x2000);
-  } else {
-    ChangeNTMirroring((data & 0x40) ? Horizontal : Vertical);
-  }
+  ChangeNTMirroring((data & 0x40) ? Horizontal : Vertical);
 }
 
 Byte Mapper_15::readPRG(Address addr) {  //

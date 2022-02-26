@@ -20,6 +20,7 @@ const int kMaskColorPatternIndice[][4] = {
 PatternViewer::PatternViewer()
     : screenScale_(1),
       colorPattern_(0),
+      colorShift_(0),
       pageNum_(0),
       pictureBuffer_(256, std::vector<Color>(256, 0)) {}
 
@@ -48,16 +49,24 @@ void PatternViewer::run() {
                  event.key.code == sf::Keyboard::F2) {
         pause = !pause;
       } else if (focus && event.type == sf::Event::KeyReleased &&
-                 event.key.code == sf::Keyboard::Left) {
+                 event.key.code == sf::Keyboard::Up) {
         colorPattern_--;
         if (colorPattern_ >= LEN_ARRAY(kMaskColorPatternIndice))
           colorPattern_ = LEN_ARRAY(kMaskColorPatternIndice) - 1;
         UpdateImage();
       } else if (focus && event.type == sf::Event::KeyReleased &&
-                 event.key.code == sf::Keyboard::Right) {
+                 event.key.code == sf::Keyboard::Down) {
         colorPattern_++;
         if (colorPattern_ >= LEN_ARRAY(kMaskColorPatternIndice))
           colorPattern_ = 0;
+        UpdateImage();
+      } else if (focus && event.type == sf::Event::KeyReleased &&
+                 event.key.code == sf::Keyboard::Left) {
+        if (--colorShift_ < 0) colorShift_ = 2;
+        UpdateImage();
+      } else if (focus && event.type == sf::Event::KeyReleased &&
+                 event.key.code == sf::Keyboard::Right) {
+        if (++colorShift_ > 2) colorShift_ = 0;
         UpdateImage();
       } else if (focus && event.type == sf::Event::KeyReleased &&
                  event.key.code == sf::Keyboard::PageUp) {
@@ -99,6 +108,7 @@ void PatternViewer::UpdateImage() {
       for (size_t y = 0; y < 8; y++) {
         int c = (!!(vrom[addr + y] & mask)) |
                 ((!!(vrom[addr + y + 8] & mask)) << 1);
+        if (c) c = (c + colorShift_) % 3 + 1;
         pictureBuffer_[x + tileX][y + lineX] = maskIndex[c];
       }
     }

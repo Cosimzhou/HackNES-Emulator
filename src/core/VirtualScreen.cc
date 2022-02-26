@@ -2,6 +2,7 @@
 
 #include "PaletteColors.h"
 #include "glog/logging.h"
+#include "utils.h"
 
 namespace hn {
 void VirtualScreenSfml::create(unsigned int w, unsigned int h, float pixel_size,
@@ -46,8 +47,7 @@ void VirtualScreenSfml::create(unsigned int w, unsigned int h, float pixel_size,
     }
   }
 
-  if (!font_.loadFromFile(
-          "/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf")) {
+  if (!font_.loadFromFile(Helper::SearchDefaultFont())) {
     LOG(ERROR) << "FreeMono.ttf";
   } else {
     tipText_.setFont(font_);

@@ -31,7 +31,8 @@ class PatternViewer {
 
   sf::RenderWindow window_;
   float screenScale_;
-  size_t colorPattern_;
+  int colorPattern_;
+  int colorShift_;
   size_t pageNum_;
   std::vector<std::vector<Color>> pictureBuffer_;
 };

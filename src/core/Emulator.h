@@ -65,6 +65,7 @@ class Emulator {
   sf::RenderWindow window_;
   float screenScale_;
 
+  size_t frameIdx_;
   TimePoint cycleTimer_;
   std::vector<std::map<size_t, Byte>> joypad_record_;
   std::chrono::high_resolution_clock::duration elapsedTime_;

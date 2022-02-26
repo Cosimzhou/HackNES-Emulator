@@ -1,6 +1,8 @@
 #include "Emulator.h"
+
 #include "PatternViewer.h"
 #include "glog/logging.h"
+#include "utils.h"
 
 #include <chrono>
 #include <thread>
@@ -71,7 +73,6 @@ void Emulator::run() {
 
   Reset();
   sf::Event event;
-  size_t frameIdx = 0;
   bool focus = true, pause = false;
   while (window_.isOpen()) {
     while (window_.pollEvent(event)) {
@@ -94,9 +95,13 @@ void Emulator::run() {
         texture.update(window_);
 
         sf::Image image = texture.copyToImage();
-        image.saveToFile("/tmp/test.png");
+        image.saveToFile(Helper::GenImageCaptureName());
 
         emulatorScreen_.setTip("Screen captured");
+      } else if (event.type == sf::Event::KeyPressed &&
+                 event.key.code == sf::Keyboard::F1) {
+        Reset();
+        emulatorScreen_.setTip("Game reset");
       } else if (event.type == sf::Event::KeyPressed &&
                  event.key.code == sf::Keyboard::F2) {
         pause = !pause;
@@ -133,7 +138,6 @@ void Emulator::run() {
             emulatorScreen_.setTip("Start replay");
             record_.Save();
             Reset();
-            frameIdx = 0;
             break;
           default:
             break;
@@ -165,10 +169,10 @@ void Emulator::run() {
         elapsedTime_ -= cpuCycleDuration_;
       }
 
-      if (frameIdx < ppu_.frameIndex()) {
+      if (frameIdx_ < ppu_.frameIndex()) {
         window_.draw(emulatorScreen_);
         window_.display();
-        frameIdx = ppu_.frameIndex();
+        frameIdx_ = ppu_.frameIndex();
       }
     } else {
       sf::sleep(sf::milliseconds(1000 / 60));
@@ -177,6 +181,8 @@ void Emulator::run() {
 }
 
 void Emulator::Reset() {
+  frameIdx_ = 0;
+
   mapper_->Reset();
   cpu_.Reset();
   ppu_.Reset();
