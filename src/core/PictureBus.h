@@ -5,25 +5,27 @@
 #include "Cartridge.h"
 
 namespace hn {
-class PictureBus {
+class PictureBus : public Serialize {
  public:
   PictureBus();
   Byte read(Address addr);
   void write(Address addr, Byte value);
 
-  bool setMapper(Mapper *mapper);
+  bool setMapper(Mapper* mapper);
   Byte readPalette(Byte paletteAddr);
 
   void updateMirroring();
 
+  virtual void Save(std::ostream& os) override;
+  virtual void Restore(std::istream& is) override;
+
  private:
   std::vector<Byte> RAM_;
-  std::size_t NameTable0, NameTable1, NameTable2,
-      NameTable3;  // indices where they start in RAM vector
+  std::vector<size_t> NameTable_;  // indices where they start in RAM vector
 
   std::vector<Byte> palette_;
 
-  Mapper *mapper_;
+  Mapper* mapper_;
 };
 
 }  // namespace hn

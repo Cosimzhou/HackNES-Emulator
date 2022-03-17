@@ -6,10 +6,10 @@
 
 namespace hn {
 
-class APU {
+class APU : public Serialize {
  public:
-  APU(MainBus &bus, VirtualSpeaker &speaker);
-
+  APU(MainBus &bus);
+  void SetSpeaker(VirtualSpeaker *speaker) { speaker_ = speaker; }
   void Reset();
   void Step();
 
@@ -23,6 +23,9 @@ class APU {
   std::vector<short> output_samples_;
 
   void DebugDump();
+
+  virtual void Save(std::ostream &os) override;
+  virtual void Restore(std::istream &is) override;
 
  private:
   uint8_t mFrameClock = 0;
@@ -48,7 +51,7 @@ class APU {
 
   MainBus &bus_;
 
-  VirtualSpeaker &speaker_;
+  VirtualSpeaker *speaker_;
 };
 
 }  // namespace hn

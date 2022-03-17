@@ -4,7 +4,7 @@
 #include "common.h"
 
 namespace hn {
-class AudioChannel {
+class AudioChannel : public Serialize {
  public:
   AudioChannel() {}
 
@@ -14,6 +14,9 @@ class AudioChannel {
   virtual void WriteControl(Address address, Byte data) = 0;
 
   virtual void setEnable(bool enable);
+
+  virtual void Save(std::ostream &os) override;
+  virtual void Restore(std::istream &is) override;
 
   bool enable_;
   Byte volume_;
@@ -26,6 +29,9 @@ struct EnvelopedChannel : public AudioChannel {
   uint8_t divider_;  // 时钟分频器
   uint8_t decay_;    // 计数器
   uint8_t ctrl6_;    // 控制器低6位
+
+  virtual void Save(std::ostream &os) override;
+  virtual void Restore(std::istream &is) override;
 
   void ProcessEnvelope();
 };
@@ -42,6 +48,9 @@ struct NoiseChannel : public EnvelopedChannel {
   virtual void ProcessLengthCounter() override;
   virtual void UpdateState() override;
   virtual void WriteControl(Address address, Byte data) override;
+
+  virtual void Save(std::ostream &os) override;
+  virtual void Restore(std::istream &is) override;
 };
 
 /// DMC
@@ -64,6 +73,9 @@ struct DMCChannel : public AudioChannel {
   virtual void setEnable(bool enable) override;
   // virtual void ProcessLengthCounter() override;
   // virtual void UpdateState() override;
+
+  virtual void Save(std::ostream &os) override;
+  virtual void Restore(std::istream &is) override;
 
   void UpdateDmcBit();
   void Reset();
@@ -88,24 +100,26 @@ struct TriangleChannel : public AudioChannel {
 
   virtual void setEnable(bool enable) override;
 
+  virtual void Save(std::ostream &os) override;
+  virtual void Restore(std::istream &is) override;
+
   void ProcessLinearCounter();
 };
-
-/// Linear sweep unit
-typedef struct {
-  uint8_t enable;    //扫描单元使能 E
-  uint8_t period;    //扫描单元周期（分频） PPP
-  uint8_t negative;  //是否负向扫描 N
-  uint8_t shift;     //扫描单元位移次数(位移位数) SSS
-  uint8_t divider;
-  uint8_t reload;
-} Sweep;
 
 // Pulse square wave
 struct PulseChannel : public EnvelopedChannel {
   // EnvelopedChannel
   //$4001/$4005 EPPPNSSS
-  Sweep sweep_;
+
+  /// Linear sweep unit
+  struct {
+    uint8_t enable;    //扫描单元使能 E
+    uint8_t period;    //扫描单元周期（分频） PPP
+    uint8_t negative;  //是否负向扫描 N
+    uint8_t shift;     //扫描单元位移次数(位移位数) SSS
+    uint8_t divider;
+    uint8_t reload;
+  } sweep_;
 
   //长度计数器 5BIT
   //
@@ -121,6 +135,9 @@ struct PulseChannel : public EnvelopedChannel {
   virtual void ProcessLengthCounter() override;
   virtual void UpdateState() override;
   virtual void WriteControl(Address address, Byte data) override;
+
+  virtual void Save(std::ostream &os) override;
+  virtual void Restore(std::istream &is) override;
 
   void ProcessSweepUnit(bool isOne);
 };

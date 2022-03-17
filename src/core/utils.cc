@@ -15,4 +15,9 @@ std::string Helper::GenImageCaptureName() {
 std::string Helper::SearchDefaultFont() {
   return "/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf";
 }
+
+std::string Helper::NewFileName(const std::string& hint) {
+  return "/tmp/game.sav";
+}
+
 }  // namespace hn

@@ -1,11 +1,11 @@
-#include "Controller.h"
+#include "VirtualJoypad.h"
 
 #include "glog/logging.h"
 
 namespace hn {
-Controller::Controller() : keyStates_(0), input_() {}
+VirtualJoypadSfml::VirtualJoypadSfml() : keyStates_(0), input_() {}
 
-void Controller::setKeyBindings(const JoypadInputConfig &keys) {
+void VirtualJoypadSfml::setKeyBindings(const JoypadInputConfig &keys) {
   input_ = dynamic_cast<const ControllerInputConfig &>(keys);
 
   if (input_.joystick_.inUse) {
@@ -15,7 +15,7 @@ void Controller::setKeyBindings(const JoypadInputConfig &keys) {
   }
 }
 
-void Controller::strobe(Byte b) {
+void VirtualJoypadSfml::strobe(Byte b) {
   strobe_ = (b & 1);
   if (!strobe_) {
     keyStates_ = 0;
@@ -25,7 +25,7 @@ void Controller::strobe(Byte b) {
   }
 }
 
-Byte Controller::read() {
+Byte VirtualJoypadSfml::read() {
   Byte ret;
   if (strobe_) {
     ret = input_.isPressed(A);
@@ -36,27 +36,30 @@ Byte Controller::read() {
   return ret | 0x40;
 }
 
-JoystickConfig::JoystickConfig()
-    : inUse(false), index(0), keyBindings_(Controller::TotalButtons) {}
+ControllerInputConfig::ControllerInputConfig() {
+  keyboard_ = KeysBinding(VirtualJoypadSfml::TotalButtons);
 
-ControllerInputConfig::ControllerInputConfig()
-    : keyboard_(Controller::TotalButtons), joystick_() {}
+  joystick_.inUse = false;
+  joystick_.index = 0;
+  joystick_.keyBindings_ = KeysBinding(VirtualJoypadSfml::TotalButtons);
+}
 
 bool ControllerInputConfig::isPressed(int key) const {
-  if (sf::Keyboard::isKeyPressed(keyboard_[key])) {
+  if (sf::Keyboard::isKeyPressed(
+          static_cast<sf::Keyboard::Key>(keyboard_[key]))) {
     return true;
   }
 
   if (joystick_.inUse) {
-    if (key > 3) {
+    if (key >= VirtualJoypad::Buttons::Up) {
       int val = joystick_.keyBindings_[key];
       if (val < 0) {
         return sf::Joystick::getAxisPosition(
                    joystick_.index,
-                   static_cast<sf::Joystick::Axis>(-(val + 1))) < 0;
+                   static_cast<sf::Joystick::Axis>(-(val + 1))) < -0.5;
       } else {
         return sf::Joystick::getAxisPosition(
-                   joystick_.index, static_cast<sf::Joystick::Axis>(val)) > 0;
+                   joystick_.index, static_cast<sf::Joystick::Axis>(val)) > 0.5;
       }
     } else {
       return sf::Joystick::isButtonPressed(joystick_.index,

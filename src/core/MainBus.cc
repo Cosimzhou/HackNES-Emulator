@@ -285,4 +285,12 @@ std::string MainBus::getPageContent(Address page) {
 void MainBus::Tick() { mapper_->Tick(); }
 void MainBus::DebugDump() { LOG(INFO) << "ZeroPage:\n" << getPageContent(0); }
 
+void MainBus::Save(std::ostream &os) {
+  Write(os, RAM_);
+  Write(os, extRAM_);
+}
+void MainBus::Restore(std::istream &is) {
+  Read(is, RAM_);
+  Read(is, extRAM_);
+}
 };  // namespace hn

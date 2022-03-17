@@ -27,8 +27,7 @@ enum {
   Pulse1Enable = 1
 };
 
-APU::APU(MainBus &bus, VirtualSpeaker &speaker)
-    : bus_(bus), dmc_channel_(bus), speaker_(speaker) {}
+APU::APU(MainBus &bus) : bus_(bus), dmc_channel_(bus), speaker_(nullptr) {}
 
 void APU::Write(Address address, Byte data) {
   if (0x4000 <= address && address < 0x4008) {
@@ -81,7 +80,7 @@ void APU::Write(Address address, Byte data) {
 
 void APU::Reset() {
   VLOG(2) << "APU reset";
-  speaker_.Stop();
+  if (speaker_) speaker_->Stop();
   noise_.lfsr_ = 1;
   dmc_channel_.period_ = 428;
 
@@ -89,7 +88,7 @@ void APU::Reset() {
   frame_cycle_ = 0;
   sample_segment_ = 0;
 
-  speaker_.Play();
+  if (speaker_) speaker_->Play();
 }
 
 uint8_t APU::Read(uint16_t address) {
@@ -200,7 +199,8 @@ void APU::Step() {
 
   MakeSamples(0);
 
-  speaker_.PushSample(output_samples_.data(), output_samples_.size());
+  if (speaker_)
+    speaker_->PushSample(output_samples_.data(), output_samples_.size());
 }
 
 uint8_t APU::MakeSamples(uint32_t cpuCycle) {
@@ -247,4 +247,38 @@ inline void APU::ProcessEnvelope() {
 }
 
 void APU::DebugDump() {}
+void APU::Save(std::ostream &os) {
+  Serialize::Write(os, mFrameClock);
+  Serialize::Write(os, mFrame5Step);
+  Serialize::Write(os, mFrameInterrupt);
+  Serialize::Write(os, mIRQDisable);
+
+  Serialize::Write(os, frame_cycle_);
+  Serialize::Write(os, sample_cycle_);
+  Serialize::Write(os, sample_segment_);
+
+  pulses_[0].Save(os);
+  pulses_[1].Save(os);
+  triangle_.Save(os);
+  noise_.Save(os);
+  dmc_channel_.Save(os);
+}
+
+void APU::Restore(std::istream &is) {
+  Serialize::Read(is, mFrameClock);
+  Serialize::Read(is, mFrame5Step);
+  Serialize::Read(is, mFrameInterrupt);
+  Serialize::Read(is, mIRQDisable);
+
+  Serialize::Read(is, frame_cycle_);
+  Serialize::Read(is, sample_cycle_);
+  Serialize::Read(is, sample_segment_);
+
+  pulses_[0].Restore(is);
+  pulses_[1].Restore(is);
+  triangle_.Restore(is);
+  noise_.Restore(is);
+  dmc_channel_.Restore(is);
+}
+
 }  // namespace hn

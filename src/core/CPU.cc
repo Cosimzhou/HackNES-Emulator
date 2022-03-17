@@ -29,7 +29,7 @@ const int OperationCycles[0x100] = {
     2, 5, 0, 0, 0, 4, 6, 0, 2, 4, 0, 0, 0, 4, 7, 0,
 };
 
-CPU::CPU(MainBus &mem) : bus_(mem) {}
+CPU::CPU(MainBus& mem) : bus_(mem) {}
 
 void CPU::Reset() { Reset(readAddress(ResetVector)); }
 
@@ -61,11 +61,11 @@ void CPU::interrupt(InterruptType type) {
   pushStack(reg_PC_);
 
 #ifdef PSW_IN_BYTE
-  pushStack(psw_ | ((type == BRK) << 4));
+  pushStack(psw_ | ((type == IT_BRK) << 4));
 #else   // PSW_IN_BYTE
   Byte flags = flag_N_ << 7 | flag_V_ << 6 |
-               1 << 5 |              // unused bit, supposed to be always 1
-               (type == BRK) << 4 |  // B flag set if BRK
+               1 << 5 |                 // unused bit, supposed to be always 1
+               (type == IT_BRK) << 4 |  // B flag set if IT_BRK
                flag_D_ << 3 | flag_I_ << 2 | flag_Z_ << 1 | flag_C_;
   pushStack(flags);
 #endif  // PSW_IN_BYTE
@@ -700,4 +700,61 @@ void CPU::DebugDump() {
   }
 }
 
+void CPU::Save(std::ostream& os) {
+  Write(os, skipCycles_);
+  Write(os, cycles_);
+
+  // Registers
+  Write(os, reg_PC_);
+  Write(os, old_PC_);
+  Write(os, reg_SP_);
+  Write(os, reg_A_);
+  Write(os, reg_X_);
+  Write(os, reg_Y_);
+
+  // Status flags.
+#ifdef PSW_IN_BYTE
+  Write(os, psw_);
+#else   // PSW_IN_BYTE
+  // Is storing them in one byte better?
+  Write(os, flag_C_);
+  Write(os, flag_Z_);
+  Write(os, flag_I_);
+  // bool flag_B_;
+  Write(os, flag_D_);
+  Write(os, flag_V_);
+  Write(os, flag_N_);
+#endif  // PSW_IN_BYTE
+
+  Write(os, irq_flag_);
+}
+
+void CPU::Restore(std::istream& is) {
+  Read(is, skipCycles_);
+  Read(is, cycles_);
+
+  // Registers
+  Read(is, reg_PC_);
+  Read(is, old_PC_);
+  Read(is, reg_SP_);
+  Read(is, reg_A_);
+  Read(is, reg_X_);
+  Read(is, reg_Y_);
+
+  // Status flags.
+#ifdef PSW_IN_BYTE
+  Read(is, psw_);
+#else   // PSW_IN_BYTE
+  // Is storing them in one byte better?
+  Read(is, flag_C_);
+  Read(is, flag_Z_);
+  Read(is, flag_I_);
+  // bool flag_B_;
+  Read(is, flag_D_);
+  Read(is, flag_V_);
+  Read(is, flag_N_);
+#endif  // PSW_IN_BYTE
+
+  Read(is, irq_flag_);
+}
 };  // namespace hn

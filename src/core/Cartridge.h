@@ -16,6 +16,7 @@ namespace hn {
 //          bit 4-7   Four lower bits of ROM Mapper Type.
 // 7        bit 0     1 for VS-System cartridges.
 //          bit 1-3   Reserved, must be zeroes!
+//             bit 2,3 0x0c == 0x08 it is a NES 2.0
 //          bit 4-7   Four higher bits of ROM Mapper Type.
 // 8        Number of 8kB RAM banks. For compatibility with the previous
 //          versions of the .NES format, assume 1x8kB RAM page when this
@@ -36,9 +37,30 @@ struct CartridgeHeader {
   Byte banks() const { return bytes[4]; }
   Byte vbanks() const { return bytes[5]; }
   Byte nameTableMirroring() const { return bytes[6] & 0xB; }
-  Byte mapperNumber() const {
-    return ((bytes[6] >> 4) & 0xf) | (bytes[7] & 0xf0);
+  Word mapperNumber() const {
+    Word type = ((bytes[6] >> 4) & 0xf) | (bytes[7] & 0xf0);
+    if (isNES2_0()) {
+      type |= static_cast<Word>(bytes[8] & 0x0f) << 8;
+    }
+    return type;
   }
+  Byte subMapperNumber() const {
+    if (isNES2_0()) {
+      return (bytes[8] >> 4) & 0xf;
+    }
+
+    return 0;
+  }
+
+  Byte consoleType() const {
+    // 0: Nintendo Entertainment System/Family Computer
+    // 1: Nintendo Vs. System
+    // 2: Nintendo Playchoice 10
+    // 3: Extended Console Type
+    return 0x3 & bytes[7];
+  }
+  bool isNES2_0() const { return (bytes[7] & 0xc) == 0x8; }
+
   Byte extendedRAM() const { return bytes[6] & 0x2; }
   bool trainer() const { return bytes[6] & 0x4; }
   // bool ntsc() const { return (bytes[9] & 0x1); }
@@ -69,7 +91,11 @@ class Cartridge {
   bool setBus(MainBus *bus);
   MainBus *bus() const;
 
+  const CartridgeHeader &header() const { return header_; }
+
  private:
+  CartridgeHeader header_;
+
   std::vector<Byte> trainer_;
   std::vector<Byte> PRG_ROM_;
   std::vector<Byte> CHR_ROM_;

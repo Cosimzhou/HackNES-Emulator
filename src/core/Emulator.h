@@ -1,73 +1,88 @@
 #pragma once
-#include <SFML/Graphics.hpp>
 #include <chrono>
+#include <map>
+#include <memory>
 
 #include "APU.h"
 #include "CPU.h"
-#include "Controller.h"
 #include "GoldFinger.h"
 #include "MainBus.h"
 #include "OpRecord.h"
 #include "PPU.h"
+#include "PeripheralDevices.h"
 #include "PictureBus.h"
-#include "VirtualScreen.h"
-#include "VirtualSpeaker.h"
+#include "common.h"
 
 namespace hn {
-using TimePoint = std::chrono::high_resolution_clock::time_point;
 
 const int NESVideoWidth = ScanlineVisibleDots;
 const int NESVideoHeight = VisibleScanlines;
 
-class Emulator {
+class Emulator : public Serialize {
  public:
   Emulator();
-  void run();
+
+  virtual void run() = 0;
+  virtual void FrameRefresh() = 0;
+
   void setVideoWidth(int width);
   void setVideoHeight(int height);
   void setVideoScale(float scale);
-  void setKeys(const ControllerInputConfig &p1,
-               const ControllerInputConfig &p2);
+  void setKeys(const JoypadInputConfig &p1, const JoypadInputConfig &p2);
 
   enum { PLAYING, RECORDING, RECORDED, REPLAY } workMode_;
 
   bool LoadCartridge(const std::string &rom_path);
   void SetCartridge(const Cartridge &cartridge);
+  void SetRecordFile(const std::string &file) { record_file_ = file; }
 
   OperatingRecord record_;
 
   void Pause();
   void Resume();
+  void Reset();
+  void HintText(const std::string &text);
+
+  virtual void Save(std::ostream &os) override;
+  virtual void Restore(std::istream &is) override;
+
+ protected:
+  void DebugDump();
+
+  bool HardwareSetup();
+  void RunTick(bool running);
+  void RestoreRecord();
+  void SaveRecord();
+
+  void OnPause();
+  void OnResume();
+  void ToggleWorkMode();
+
+  std::unique_ptr<VirtualScreen> emulatorScreen_;
+  std::unique_ptr<VirtualSpeaker> emulatorSpeaker_;
+  std::unique_ptr<VirtualJoypad> emulatorJoypads_[2];
+
+  float screenScale_;
+  TimePoint cycleTimer_;
+
+  GoldFinger goldfinger_;
+  Cartridge cartridge_;
 
  private:
   void DMA(Byte page);
   void XPUTick();
-  void Reset();
   Byte ReadJoypad(int no);
-
-  void DebugDump();
-
-  VirtualScreenSfml emulatorScreen_;
-  VirtualSpeakerSfml emulatorSpeaker_;
 
   MainBus bus_;
   PictureBus pictureBus_;
   CPU cpu_;
   PPU ppu_;
   APU apu_;
-  Cartridge cartridge_;
   std::unique_ptr<Mapper> mapper_;
 
-  Controller controllers_[2];
-
-  GoldFinger goldfinger_;
-
-  sf::RenderWindow window_;
-  float screenScale_;
-
   size_t frameIdx_;
-  TimePoint cycleTimer_;
-  std::vector<std::map<size_t, Byte>> joypad_record_;
+  std::string record_file_;
+  // std::vector<std::map<size_t, Byte>> joypad_record_;
   std::chrono::high_resolution_clock::duration elapsedTime_;
   std::chrono::nanoseconds cpuCycleDuration_;
 };

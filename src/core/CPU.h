@@ -6,9 +6,9 @@
 
 namespace hn {
 
-class CPU {
+class CPU : public Serialize {
  public:
-  CPU(MainBus &mem);
+  CPU(MainBus& mem);
 
   void Step();
   void Reset();
@@ -23,6 +23,9 @@ class CPU {
   size_t clock_cycles() const { return cycles_; }
 
   void DebugDump();
+
+  virtual void Save(std::ostream& os) override;
+  virtual void Restore(std::istream& is) override;
 
  private:
   // Assuming sequential execution, for asynchronously calling this with
@@ -88,7 +91,7 @@ class CPU {
 
   Byte irq_flag_;
 
-  MainBus &bus_;
+  MainBus& bus_;
 };
 
 }  // namespace hn

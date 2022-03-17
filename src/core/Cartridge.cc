@@ -62,7 +62,7 @@ bool Cartridge::loadFromFile(std::string path) {
 
   LOG(INFO) << "Reading ROM from path: " << path;
 
-  CartridgeHeader header;
+  CartridgeHeader &header = header_;
   if (!romFile.read(reinterpret_cast<char *>(&header), 0x10)) {
     LOG(ERROR) << "Reading iNES header failed.";
     return false;

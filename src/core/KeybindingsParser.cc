@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include "Controller.h"
+#include "PeripheralDevices.h"
 #include "glog/logging.h"
 
 namespace hn {
@@ -21,27 +21,27 @@ inline std::string trim(const std::string &s) {
   return str;
 }
 
-const std::string kButtonStrings[] = {"A",  "B",    "Select", "Start",
-                                      "Up", "Down", "Left",   "Right"};
+const std::string kButtonStrings[] = {"A",  "B",    "SELECT", "START",
+                                      "UP", "DOWN", "LEFT",   "RIGHT"};
 
 const std::string kKeyStrings[] = {
     "A",         "B",        "C",        "D",        "E",        "F",
     "G",         "H",        "I",        "J",        "K",        "L",
     "M",         "N",        "O",        "P",        "Q",        "R",
     "S",         "T",        "U",        "V",        "W",        "X",
-    "Y",         "Z",        "Num0",     "Num1",     "Num2",     "Num3",
-    "Num4",      "Num5",     "Num6",     "Num7",     "Num8",     "Num9",
-    "Escape",    "LControl", "LShift",   "LAlt",     "LSystem",  "RControl",
-    "RShift",    "RAlt",     "RSystem",  "Menu",     "LBracket", "RBracket",
-    "SemiColon", "Comma",    "Period",   "Quote",    "Slash",    "BackSlash",
-    "Tilde",     "Equal",    "Dash",     "Space",    "Return",   "BackSpace",
-    "Tab",       "PageUp",   "PageDown", "End",      "Home",     "Insert",
-    "Delete",    "Add",      "Subtract", "Multiply", "Divide",   "Left",
-    "Right",     "Up",       "Down",     "Numpad0",  "Numpad1",  "Numpad2",
-    "Numpad3",   "Numpad4",  "Numpad5",  "Numpad6",  "Numpad7",  "Numpad8",
-    "Numpad9",   "F1",       "F2",       "F3",       "F4",       "F5",
+    "Y",         "Z",        "NUM0",     "NUM1",     "NUM2",     "NUM3",
+    "NUM4",      "NUM5",     "NUM6",     "NUM7",     "NUM8",     "NUM9",
+    "ESCAPE",    "LCONTROL", "LSHIFT",   "LALT",     "LSYSTEM",  "RCONTROL",
+    "RSHIFT",    "RALT",     "RSYSTEM",  "MENU",     "LBRACKET", "RBRACKET",
+    "SEMICOLON", "COMMA",    "PERIOD",   "QUOTE",    "SLASH",    "BACKSLASH",
+    "TILDE",     "EQUAL",    "DASH",     "SPACE",    "RETURN",   "BACKSPACE",
+    "TAB",       "PAGEUP",   "PAGEDOWN", "END",      "HOME",     "INSERT",
+    "DELETE",    "ADD",      "SUBTRACT", "MULTIPLY", "DIVIDE",   "LEFT",
+    "RIGHT",     "UP",       "DOWN",     "NUMPAD0",  "NUMPAD1",  "NUMPAD2",
+    "NUMPAD3",   "NUMPAD4",  "NUMPAD5",  "NUMPAD6",  "NUMPAD7",  "NUMPAD8",
+    "NUMPAD9",   "F1",       "F2",       "F3",       "F4",       "F5",
     "F6",        "F7",       "F8",       "F9",       "F10",      "F11",
-    "F12",       "F13",      "F14",      "F15",      "Pause"};
+    "F12",       "F13",      "F14",      "F15",      "PAUSE"};
 
 int parseKeyName(const std::string &name) {
   auto beg = std::begin(kButtonStrings);
@@ -50,8 +50,8 @@ int parseKeyName(const std::string &name) {
   return std::distance(beg, it);
 }
 
-void parseControllerConf(std::string filepath, ControllerInputConfig &p1,
-                         ControllerInputConfig &p2) {
+void parseControllerConf(std::string filepath, JoypadInputConfig &p1,
+                         JoypadInputConfig &p2) {
   std::ifstream file(filepath);
   std::string line;
   enum { Player1, Player2, None } state;
@@ -60,9 +60,12 @@ void parseControllerConf(std::string filepath, ControllerInputConfig &p1,
     line = trim(line);
     if (line[0] == '#' || line.empty()) {
       continue;
-    } else if (line == "[Player1]") {
+    }
+
+    std::transform(line.begin(), line.end(), line.begin(), toupper);
+    if (line == "[PLAYER1]") {
       state = Player1;
-    } else if (line == "[Player2]") {
+    } else if (line == "[PLAYER2]") {
       state = Player2;
     } else if (state == Player1 || state == Player2) {
       auto divider = line.find("=");
@@ -98,8 +101,8 @@ void parseControllerConf(std::string filepath, ControllerInputConfig &p1,
         }
 
         auto key = std::distance(std::begin(kKeyStrings), it2);
-        (state == Player1 ? p1 : p2).keyboard_[i] =
-            static_cast<sf::Keyboard::Key>(key);
+        (state == Player1 ? p1 : p2).keyboard_[i] = static_cast<int>(key);
+
         VLOG(3) << "Player" << state << " key" << kButtonStrings[i] << "=> "
                 << kKeyStrings[key];
       }

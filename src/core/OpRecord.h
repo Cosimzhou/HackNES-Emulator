@@ -8,20 +8,23 @@
 
 namespace hn {
 
-class OperatingRecord {
+class OperatingRecord : public Serialize {
  public:
   OperatingRecord();
 
   void Record(int player, size_t cycle, Byte code);
   Byte Read(int player, size_t cycle) const;
 
-  void Load(const std::string &path);
-  void Save(const std::string &path);
+  void Load(const std::string& path);
+  void Save(const std::string& path);
   void Save();
 
   void setFinishCallback(std::function<void()> finish) {
     finish_event_ = finish;
   }
+
+  virtual void Save(std::ostream& os) override;
+  virtual void Restore(std::istream& is) override;
 
  private:
   std::vector<std::set<size_t>> joypad_record_;

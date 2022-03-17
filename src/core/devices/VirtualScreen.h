@@ -1,6 +1,6 @@
 #pragma once
 #include <SFML/Graphics.hpp>
-#include "PeripheralDevices.h"
+#include "../PeripheralDevices.h"
 
 namespace hn {
 class VirtualScreenSfml : public VirtualScreen, public sf::Drawable {

@@ -1,8 +1,8 @@
 #include "VirtualScreen.h"
 
-#include "PaletteColors.h"
+#include "../PaletteColors.h"
+#include "../utils.h"
 #include "glog/logging.h"
-#include "utils.h"
 
 namespace hn {
 void VirtualScreenSfml::create(unsigned int w, unsigned int h, float pixel_size,

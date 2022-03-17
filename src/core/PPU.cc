@@ -2,6 +2,7 @@
 
 #include <cstring>
 #include <ios>
+#include <ostream>
 
 #include "CPU.h"
 #include "common.h"
@@ -47,10 +48,10 @@ constexpr Byte kPPUCtrlLongSprite = 0x20;
 constexpr Byte kPPUCtrlInterrupt = 0x80;
 #endif  // PPUSTATUS_IN_BYTE
 
-PPU::PPU(MainBus &mainBus, PictureBus &bus, VirtualScreen &screen)
+PPU::PPU(MainBus &mainBus, PictureBus &bus)
     : mainBus_(mainBus),
       bus_(bus),
-      screen_(screen),
+      screen_(nullptr),
       spriteMemory_(64 * 4),
       pictureBuffer_(ScanlineVisibleDots,
                      std::vector<Color>(VisibleScanlines, 0x24)) {}
@@ -229,9 +230,11 @@ void PPU::postRender() {
   cycle_ = 0;
   pipelineState_ = VerticalBlank;
 
-  for (int x = 0; x < pictureBuffer_.size(); ++x) {
-    for (int y = 0; y < pictureBuffer_[0].size(); ++y) {
-      screen_.setPixel(x, y, pictureBuffer_[x][y]);
+  if (screen_) {
+    for (int x = 0; x < pictureBuffer_.size(); ++x) {
+      for (int y = 0; y < pictureBuffer_[0].size(); ++y) {
+        screen_->setPixel(x, y, pictureBuffer_[x][y]);
+      }
     }
   }
 
@@ -528,6 +531,131 @@ void PPU::DebugDump() {
             << " 1stW: " << std::boolalpha << firstWrite_
             << " xScl:" << +fineXScroll_ << " addrBuf:" << +dataBuffer_
             << " oamAddr:" << +oamDataAddress_;
+}
+
+void PPU::Save(std::ostream &os) {
+  uint32_t lines = pictureBuffer_.size();
+  Write(os, lines);
+  for (const auto &vec : pictureBuffer_) {
+    Write(os, vec);
+  }
+
+  Write(os, frameIndex_);
+  Write(os, spriteMemory_);
+  Write(os, scanlineSprites_);
+
+  Write(os, cycle_);
+  Write(os, scanline_);
+  Write(os, evenFrame_);
+  Write(os, pipelineState_);
+
+  // Registers
+  Write(os, dataAddress_);
+  Write(os, tempAddress_);
+  Write(os, dataAddrIncrement_);
+
+  Write(os, firstWrite_);
+  Write(os, fineXScroll_);
+  Write(os, dataBuffer_);
+
+  Write(os, oamDataAddress_);
+
+  // Setup flags and variables
+  // Control byte
+#ifdef PPUCONTROL_IN_BYTE
+  Write(os, ppu_control_);
+#else   // PPUCONTROL_IN_BYTE
+  bool longSprites_;
+  bool generateInterrupt_;
+
+  enum CharacterPage {
+    Low,
+    High,
+  } bgPage_,
+      sprPage_;
+#endif  // PPUCONTROL_IN_BYTE
+
+  // Mask byte
+#ifdef PPUMASK_IN_BYTE
+  Write(os, ppu_mask_);
+#else   // PPUMASK_IN_BYTE
+  bool greyscaleMode_;
+  bool showSprites_;
+  bool showBackground_;
+  bool showEdgeSprites_;
+  bool showEdgeBackground_;
+#endif  // PPUMASK_IN_BYTE
+
+  // Status byte
+#ifdef PPUSTATUS_IN_BYTE
+  Write(os, ppu_status_);
+#else   // PPUSTATUS_IN_BYTE
+  bool vblank_;
+  bool sprZeroHit_;
+#endif  // PPUSTATUS_IN_BYTE
+}
+
+void PPU::Restore(std::istream &is) {
+  uint32_t lines;
+  Read(is, lines);
+  pictureBuffer_.resize(lines);
+  for (auto &vec : pictureBuffer_) {
+    Read(is, vec);
+  }
+
+  Read(is, frameIndex_);
+  Read(is, spriteMemory_);
+  Read(is, scanlineSprites_);
+
+  Read(is, cycle_);
+  Read(is, scanline_);
+  Read(is, evenFrame_);
+  Read(is, pipelineState_);
+
+  // Registers
+  Read(is, dataAddress_);
+  Read(is, tempAddress_);
+  Read(is, dataAddrIncrement_);
+
+  Read(is, firstWrite_);
+  Read(is, fineXScroll_);
+  Read(is, dataBuffer_);
+
+  Read(is, oamDataAddress_);
+
+  // Setup flags and variables
+  // Control byte
+#ifdef PPUCONTROL_IN_BYTE
+  Read(is, ppu_control_);
+#else   // PPUCONTROL_IN_BYTE
+  bool longSprites_;
+  bool generateInterrupt_;
+
+  enum CharacterPage {
+    Low,
+    High,
+  } bgPage_,
+      sprPage_;
+#endif  // PPUCONTROL_IN_BYTE
+
+  // Mask byte
+#ifdef PPUMASK_IN_BYTE
+  Read(is, ppu_mask_);
+#else   // PPUMASK_IN_BYTE
+  bool greyscaleMode_;
+  bool showSprites_;
+  bool showBackground_;
+  bool showEdgeSprites_;
+  bool showEdgeBackground_;
+#endif  // PPUMASK_IN_BYTE
+
+  // Status byte
+#ifdef PPUSTATUS_IN_BYTE
+  Read(is, ppu_status_);
+#else   // PPUSTATUS_IN_BYTE
+  bool vblank_;
+  bool sprZeroHit_;
+#endif  // PPUSTATUS_IN_BYTE
 }
 
 }  // namespace hn

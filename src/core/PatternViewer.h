@@ -3,7 +3,7 @@
 #include <chrono>
 
 #include "Cartridge.h"
-#include "VirtualScreen.h"
+#include "devices/VirtualScreen.h"
 
 namespace hn {
 

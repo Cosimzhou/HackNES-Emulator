@@ -19,9 +19,9 @@ enum NameTableMirroring {
 //
 //  https://wiki.nesdev.org/w/index.php?title=Mapper
 //
-class Mapper {
+class Mapper : public Serialize {
  public:
-  Mapper(Cartridge &cart, Byte t) : cartridge_(cart), type_(t){};
+  Mapper(Cartridge &cart, Word t) : cartridge_(cart), type_(t){};
 
   virtual void Reset() = 0;
   virtual void writePRG(Address addr, Byte value) = 0;
@@ -44,12 +44,15 @@ class Mapper {
   virtual void Hsync(int scanline) {}
   virtual void Tick() {}
 
+  virtual void Save(std::ostream &os) override;
+  virtual void Restore(std::istream &is) override;
+
  protected:
   void ChangeNTMirroring(NameTableMirroring mirror);
   void FireIRQ();
   void StopIRQ();
 
   Cartridge &cartridge_;
-  Byte type_;
+  Word type_;
 };
 }  // namespace hn

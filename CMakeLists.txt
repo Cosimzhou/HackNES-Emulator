@@ -25,6 +25,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules/;${CMAKE_MODULE_PATH};$
 # Add sources
 file(GLOB SOURCES
     "${PROJECT_SOURCE_DIR}/src/core/*.cc"
+    "${PROJECT_SOURCE_DIR}/src/core/devices/*.cc"
     "${PROJECT_SOURCE_DIR}/src/mapper/*.cc"
 )
 

@@ -2,32 +2,21 @@
 #include <SFML/Window.hpp>
 #include <cstdint>
 
-#include "PeripheralDevices.h"
-#include "common.h"
+#include "../PeripheralDevices.h"
+#include "../common.h"
 
 namespace hn {
-
-typedef struct JoystickConfig {
-  bool inUse;
-  unsigned int index;
-  std::vector<int> keyBindings_;
-  JoystickConfig();
-} JoystickConfig;
-
-typedef std::vector<sf::Keyboard::Key> KeyboardBinding;
 
 class ControllerInputConfig : public JoypadInputConfig {
  public:
   ControllerInputConfig();
-  virtual bool isPressed(int) const;
 
-  KeyboardBinding keyboard_;
-  JoystickConfig joystick_;
+  virtual bool isPressed(int) const;
 };
 
-class Controller : public VirtualJoypad {
+class VirtualJoypadSfml : public VirtualJoypad {
  public:
-  Controller();
+  VirtualJoypadSfml();
 
   virtual void strobe(Byte b);
   virtual Byte read();

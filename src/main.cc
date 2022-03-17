@@ -1,4 +1,5 @@
-#include "core/Emulator.h"
+#include "core/EmulatorSfml.h"
+#include "core/devices/VirtualJoypad.h"
 #include "gflags/gflags.h"
 #include "glog/logging.h"
 
@@ -6,6 +7,7 @@ DEFINE_string(path, "", "Specify ROM path");
 DEFINE_bool(recording, false, "Specify recording mode");
 DEFINE_bool(print, false, "Specify recording mode");
 DEFINE_string(record, "", "Specify recording file");
+DEFINE_string(savefile, "", "Specify save recording file");
 DEFINE_double(vrate, 0,
               "Set the width of the emulation screen (height is set "
               "automatically to fit the aspect ratio)");
@@ -17,8 +19,8 @@ DEFINE_int32(height, 0,
              "automatically to fit the aspect ratio)");
 
 namespace hn {
-void parseControllerConf(std::string filepath, ControllerInputConfig &p1,
-                         ControllerInputConfig &p2);
+void parseControllerConf(std::string filepath, JoypadInputConfig &p1,
+                         JoypadInputConfig &p2);
 }
 
 int main(int argc, char **argv) {
@@ -34,7 +36,7 @@ int main(int argc, char **argv) {
                   sf::Keyboard::Up,      sf::Keyboard::Down,
                   sf::Keyboard::Left,    sf::Keyboard::Right};
 
-  hn::Emulator emulator;
+  hn::EmulatorSfml emulator;
   if (FLAGS_vrate > 0) {
     emulator.setVideoScale(FLAGS_vrate);
   }
@@ -75,6 +77,8 @@ int main(int argc, char **argv) {
     }
     emulator.record_.Save("/tmp/test.rcd");
   }
+
+  emulator.SetRecordFile(FLAGS_savefile);
 
   hn::parseControllerConf("keybindings.conf", p1, p2);
   emulator.setKeys(p1, p2);

@@ -49,7 +49,8 @@ namespace hn {
 //  | 0x0ffff                                       |
 //  +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
 //
-PictureBus::PictureBus() : RAM_(0x800), palette_(0x20), mapper_(nullptr) {}
+PictureBus::PictureBus()
+    : RAM_(0x800), palette_(0x20), mapper_(nullptr), NameTable_(4) {}
 
 Byte PictureBus::read(Address addr) {
   addr &= 0x3fff;
@@ -59,13 +60,13 @@ Byte PictureBus::read(Address addr) {
     // Name tables upto 0x3000, then mirrored upto 3eff
     auto index = addr & 0x3ff;
     if (addr < 0x2400) {  // NT0
-      return RAM_[NameTable0 + index];
+      return RAM_[NameTable_[0] + index];
     } else if (addr < 0x2800) {  // NT1
-      return RAM_[NameTable1 + index];
+      return RAM_[NameTable_[1] + index];
     } else if (addr < 0x2c00) {  // NT2
-      return RAM_[NameTable2 + index];
+      return RAM_[NameTable_[2] + index];
     } else {  // NT3
-      return RAM_[NameTable3 + index];
+      return RAM_[NameTable_[3] + index];
     }
   } else if (addr < 0x4000) {
     return palette_[addr & 0x1f];
@@ -86,13 +87,13 @@ void PictureBus::write(Address addr, Byte value) {
     // Name tables upto 0x3000, then mirrored upto 3eff
     auto index = addr & 0x3ff;
     if (addr < 0x2400) {  // NT0
-      RAM_[NameTable0 + index] = value;
+      RAM_[NameTable_[0] + index] = value;
     } else if (addr < 0x2800) {  // NT1
-      RAM_[NameTable1 + index] = value;
+      RAM_[NameTable_[1] + index] = value;
     } else if (addr < 0x2c00) {  // NT2
-      RAM_[NameTable2 + index] = value;
+      RAM_[NameTable_[2] + index] = value;
     } else {  // NT3
-      RAM_[NameTable3 + index] = value;
+      RAM_[NameTable_[3] + index] = value;
     }
   } else if (addr < 0x4000) {
     addr &= 0x1f;
@@ -126,31 +127,31 @@ void PictureBus::write(Address addr, Byte value) {
 void PictureBus::updateMirroring() {
   switch (mapper_->getNameTableMirroring()) {
     case Horizontal:
-      NameTable0 = NameTable1 = 0;
-      NameTable2 = NameTable3 = 0x400;
+      NameTable_[0] = NameTable_[1] = 0;
+      NameTable_[2] = NameTable_[3] = 0x400;
       VLOG(2) << "Horizontal Name Table mirroring set. (Vertical Scrolling)";
       break;
     case Vertical:
-      NameTable0 = NameTable2 = 0;
-      NameTable1 = NameTable3 = 0x400;
+      NameTable_[0] = NameTable_[2] = 0;
+      NameTable_[1] = NameTable_[3] = 0x400;
       VLOG(2) << "Vertical Name Table mirroring set. (Horizontal Scrolling)";
       break;
     case OneScreenLower:
-      NameTable0 = NameTable1 = NameTable2 = NameTable3 = 0;
+      NameTable_[0] = NameTable_[1] = NameTable_[2] = NameTable_[3] = 0;
       VLOG(2) << "Single Screen mirroring set with lower bank.";
       break;
     case OneScreenHigher:
-      NameTable0 = NameTable1 = NameTable2 = NameTable3 = 0x400;
+      NameTable_[0] = NameTable_[1] = NameTable_[2] = NameTable_[3] = 0x400;
       VLOG(2) << "Single Screen mirroring set with higher bank.";
       break;
     default:
-      NameTable0 = NameTable1 = NameTable2 = NameTable3 = 0;
+      NameTable_[0] = NameTable_[1] = NameTable_[2] = NameTable_[3] = 0;
       LOG(ERROR) << "Unsupported Name Table mirroring : "
                  << mapper_->getNameTableMirroring();
   }
 }
 
-bool PictureBus::setMapper(Mapper *mapper) {
+bool PictureBus::setMapper(Mapper* mapper) {
   if (!mapper) {
     LOG(ERROR) << "Mapper argument is nullptr";
     return false;
@@ -159,6 +160,17 @@ bool PictureBus::setMapper(Mapper *mapper) {
   mapper_ = mapper;
   updateMirroring();
   return true;
+}
+
+void PictureBus::Save(std::ostream& os) {
+  Write(os, RAM_);
+  Write(os, NameTable_);
+  Write(os, palette_);
+}
+void PictureBus::Restore(std::istream& is) {
+  Read(is, RAM_);
+  Read(is, NameTable_);
+  Read(is, palette_);
 }
 
 }  // namespace hn

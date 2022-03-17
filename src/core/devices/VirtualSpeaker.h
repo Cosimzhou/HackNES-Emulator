@@ -1,7 +1,7 @@
 #pragma once
 
 #include <SFML/Audio.hpp>
-#include "PeripheralDevices.h"
+#include "../PeripheralDevices.h"
 
 namespace hn {
 

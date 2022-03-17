@@ -68,6 +68,24 @@ void EnvelopedChannel::ProcessEnvelope() {
   }
 }
 
+void EnvelopedChannel::Save(std::ostream &os) {
+  AudioChannel::Save(os);
+
+  Write(os, start_flag_);
+  Write(os, divider_);
+  Write(os, decay_);
+  Write(os, ctrl6_);
+}
+
+void EnvelopedChannel::Restore(std::istream &is) {
+  AudioChannel::Restore(is);
+
+  Read(is, start_flag_);
+  Read(is, divider_);
+  Read(is, decay_);
+  Read(is, ctrl6_);
+}
+
 Byte TriangleChannel::MakeSamples() {
   // static const Byte TRI_SEQ[] = {
   // 15, 14, 13, 12, 11, 10, 9,  8,  7,  6, 5,
@@ -381,6 +399,116 @@ void TriangleChannel::ProcessLinearCounter() {
     --linearCounter_;
   }
   if (!flagHalt_) reload_ = false;
+}
+
+void AudioChannel::Save(std::ostream &os) {
+  Write(os, enable_);
+  Write(os, volume_);
+  Write(os, lengthCounter_);
+  Write(os, period_);
+}
+
+void AudioChannel::Restore(std::istream &is) {
+  Read(is, enable_);
+  Read(is, volume_);
+  Read(is, lengthCounter_);
+  Read(is, period_);
+}
+
+void DMCChannel::Save(std::ostream &os) {
+  AudioChannel::Save(os);
+
+  Write(os, orgaddr_);
+  Write(os, address_);
+  Write(os, length_);
+  Write(os, bytesRemaining_);
+  Write(os, clock_);
+  Write(os, irqEnable_);
+  Write(os, irqLoop_);
+  Write(os, bitsRemaining_);
+  Write(os, sampleBuffer_);
+  Write(os, interruptFlag_);
+}
+
+void DMCChannel::Restore(std::istream &is) {
+  AudioChannel::Restore(is);
+
+  Read(is, orgaddr_);
+  Read(is, address_);
+  Read(is, length_);
+  Read(is, bytesRemaining_);
+  Read(is, clock_);
+  Read(is, irqEnable_);
+  Read(is, irqLoop_);
+  Read(is, bitsRemaining_);
+  Read(is, sampleBuffer_);
+  Read(is, interruptFlag_);
+}
+
+void TriangleChannel::Save(std::ostream &os) {
+  AudioChannel::Save(os);
+
+  Write(os, cycle_);
+  Write(os, linearCounter_);
+  Write(os, reloadValue_);
+  Write(os, reload_);
+  Write(os, flagHalt_);
+  Write(os, seqIndex_);
+  Write(os, incMask_);
+}
+
+void TriangleChannel::Restore(std::istream &is) {
+  AudioChannel::Restore(is);
+
+  Read(is, cycle_);
+  Read(is, linearCounter_);
+  Read(is, reloadValue_);
+  Read(is, reload_);
+  Read(is, flagHalt_);
+  Read(is, seqIndex_);
+  Read(is, incMask_);
+}
+
+void NoiseChannel::Save(std::ostream &os) {
+  EnvelopedChannel::Save(os);
+
+  Write(os, cycle_);
+  Write(os, bitsRemaining_);
+  Write(os, lfsr_);
+  Write(os, shortMode_);
+  Write(os, periodIndex_);
+}
+
+void NoiseChannel::Restore(std::istream &is) {
+  EnvelopedChannel::Restore(is);
+
+  Read(is, cycle_);
+  Read(is, bitsRemaining_);
+  Read(is, lfsr_);
+  Read(is, shortMode_);
+  Read(is, periodIndex_);
+}
+
+void PulseChannel::Save(std::ostream &os) {
+  EnvelopedChannel::Save(os);
+
+  Write(os, sweep_);
+
+  Write(os, curTimer_);
+  Write(os, ctrl_);
+  Write(os, seqIndex_);
+  Write(os, cycle_);
+}
+
+void PulseChannel::Restore(std::istream &is) {
+  EnvelopedChannel::Restore(is);
+
+  Read(is, sweep_);
+
+  Read(is, curTimer_);
+  Read(is, ctrl_);
+  Read(is, seqIndex_);
+  Read(is, cycle_);
 }
 
 }  // namespace hn

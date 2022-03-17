@@ -5,6 +5,7 @@
 #include "Mapper_15.h"
 #include "Mapper_2.h"
 #include "Mapper_202.h"
+#include "Mapper_23.h"
 #include "Mapper_3.h"
 #include "Mapper_4.h"
 #include "Mapper_65.h"
@@ -15,6 +16,7 @@
 #include "../core/CPU.h"
 #include "../core/MainBus.h"
 #include "../core/PPU.h"
+#include "glog/logging.h"
 
 namespace hn {
 NameTableMirroring Mapper::getNameTableMirroring() {
@@ -45,6 +47,14 @@ std::unique_ptr<Mapper> Mapper::createMapper(Byte mapper_t, Cartridge &cart) {
     case 15:
       ret.reset(new Mapper_15(cart));
       break;
+    case 23:
+      if (cart.header().subMapperNumber() == 3) {
+        LOG(INFO) << "uuuu " << cart.header().subMapperNumber();
+      }
+      LOG(INFO) << "uuuu " << +cart.header().subMapperNumber();
+
+      ret.reset(new Mapper_23(cart));
+      break;
     case 65:
       ret.reset(new Mapper_65(cart));
       break;
@@ -71,4 +81,6 @@ void Mapper::ChangeNTMirroring(NameTableMirroring mirror) {
 void Mapper::FireIRQ() { cartridge_.bus()->cpu()->TryIRQ(); }
 void Mapper::StopIRQ() { cartridge_.bus()->cpu()->ClearIRQ(); }
 
+void Mapper::Save(std::ostream &os) { Write(os, type_); }
+void Mapper::Restore(std::istream &is) { Read(is, type_); }
 }  // namespace hn

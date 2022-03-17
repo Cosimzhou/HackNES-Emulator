@@ -15,9 +15,10 @@ constexpr int ScanlineEndCycle = 340;
 constexpr int VisibleScanlines = 240;
 constexpr int ScanlineVisibleDots = 256;
 
-class PPU {
+class PPU : public Serialize {
  public:
-  PPU(MainBus &mainBus, PictureBus &bus, VirtualScreen &screen);
+  PPU(MainBus &mainBus, PictureBus &bus);
+  void SetScreen(VirtualScreen *screen) { screen_ = screen; }
   void Step();
   void Reset();
 
@@ -43,6 +44,9 @@ class PPU {
 
   std::size_t frameIndex() const { return frameIndex_; }
 
+  virtual void Save(std::ostream &os) override;
+  virtual void Restore(std::istream &is) override;
+
  protected:
   void postRender();
   void preRender();
@@ -56,7 +60,7 @@ class PPU {
 
   MainBus &mainBus_;
   PictureBus &bus_;
-  VirtualScreen &screen_;
+  VirtualScreen *screen_;
 
   enum State { PreRender, Render, PostRender, VerticalBlank } pipelineState_;
   int cycle_;

@@ -23,9 +23,20 @@ class VirtualSpeaker {
   virtual void Stop() = 0;
 };
 
+typedef std::vector<int> KeysBinding;
+
 class JoypadInputConfig {
  public:
   virtual bool isPressed(int) const = 0;
+
+  KeysBinding keyboard_;
+
+  struct {
+    bool inUse;
+    unsigned int index;
+    KeysBinding keyBindings_;
+
+  } joystick_;
 };
 
 class VirtualJoypad {

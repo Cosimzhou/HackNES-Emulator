@@ -37,8 +37,8 @@ void Disassembler::DisassembleOnePage(Address addr, Address pc, int limit) {
 
 bool Disassembler::disassemble(bool star, char* buffer) {
   Address pc = PC_;
-  char* buf = buffer + sprintf(buffer, "%c 0x%04x            \0",
-                               (star ? '*' : ' '), PC_);
+  char* buf = buffer +
+              sprintf(buffer, "%c 0x%04x            ", (star ? '*' : ' '), PC_);
   Byte opcode = bus_.read(PC_++);
   // Using short-circuit evaluation, call the other function only if the first
   // failed ExecuteImplied must be called first and ExecuteBranch must be before

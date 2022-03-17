@@ -28,7 +28,7 @@ enum IORegisters {
 class APU;
 class CPU;
 class PPU;
-class MainBus {
+class MainBus : public Serialize {
  public:
   MainBus();
   Byte read(Address addr);
@@ -49,6 +49,9 @@ class MainBus {
   void Tick();
   void DebugDump();
   std::string getPageContent(Address page);
+
+  virtual void Save(std::ostream &os) override;
+  virtual void Restore(std::istream &is) override;
 
  private:
   std::vector<Byte> RAM_;
