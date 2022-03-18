@@ -36,6 +36,7 @@ namespace hn {
 using Byte = std::uint8_t;
 using Word = std::uint16_t;
 using Address = std::uint16_t;
+using DWord = std::uint32_t;
 using FileAddress = std::uint32_t;
 using Color = Byte;
 using RGBA = std::uint32_t;

@@ -3,6 +3,7 @@
 #include <fstream>
 
 #include "PatternViewer.h"
+#include "devices/RecordSpeaker.h"
 #include "devices/VirtualJoypad.h"
 #include "devices/VirtualScreen.h"
 #include "devices/VirtualSpeaker.h"
@@ -12,7 +13,9 @@ namespace hn {
 
 EmulatorSfml::EmulatorSfml() {
   emulatorScreen_.reset(new VirtualScreenSfml);
-  emulatorSpeaker_.reset(new VirtualSpeakerSfml);
+  emulatorSpeaker_.reset(new RecordSpeaker("/tmp/xxx.wav"));
+  dynamic_cast<RecordSpeaker*>(emulatorSpeaker_.get())
+      ->SetOutSpeaker(new VirtualSpeakerSfml);
   emulatorJoypads_[0].reset(new VirtualJoypadSfml);
   emulatorJoypads_[1].reset(new VirtualJoypadSfml);
 }

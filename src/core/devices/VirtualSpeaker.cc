@@ -7,9 +7,6 @@
 #include "glog/logging.h"
 
 namespace hn {
-sf::SoundBuffer buf;
-sf::Sound sound;
-bool sound_once = false;
 
 constexpr size_t kSampleLeastSize = 1024;
 VirtualSpeakerSfml::VirtualSpeakerSfml(unsigned int channel,
