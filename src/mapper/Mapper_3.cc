@@ -2,13 +2,8 @@
 #include "glog/logging.h"
 
 namespace hn {
-Mapper_3::Mapper_3(Cartridge &cart) : Mapper(cart, 3), selectCHR_(0) {
-  if (cart.getROM().size() == 0x4000) {  // 1 bank
-    oneBank_ = true;
-  } else {  // 2 banks
-    oneBank_ = false;
-  }
-}
+Mapper_3::Mapper_3(Cartridge &cart) : Mapper(cart, 3) {}
+
 void Mapper_3::Reset() {
   selectCHR_ = 0;
   if (cartridge_.getROM().size() == 0x4000) {  // 1 bank

@@ -68,6 +68,8 @@ class Emulator : public Serialize {
   GoldFinger goldfinger_;
   Cartridge cartridge_;
 
+  std::unique_ptr<Mapper> mapper_;
+
  private:
   void DMA(Byte page);
   void XPUTick();
@@ -78,7 +80,6 @@ class Emulator : public Serialize {
   CPU cpu_;
   PPU ppu_;
   APU apu_;
-  std::unique_ptr<Mapper> mapper_;
 
   size_t frameIdx_;
   std::string record_file_;

@@ -1,4 +1,4 @@
-#include "VirtualJoypad.h"
+#include "SfmlJoypad.h"
 
 #include "glog/logging.h"
 
@@ -56,10 +56,10 @@ bool ControllerInputConfig::isPressed(int key) const {
       if (val < 0) {
         return sf::Joystick::getAxisPosition(
                    joystick_.index,
-                   static_cast<sf::Joystick::Axis>(-(val + 1))) < -0.5;
+                   static_cast<sf::Joystick::Axis>(-(val + 1))) < -50;
       } else {
         return sf::Joystick::getAxisPosition(
-                   joystick_.index, static_cast<sf::Joystick::Axis>(val)) > 0.5;
+                   joystick_.index, static_cast<sf::Joystick::Axis>(val)) > 50;
       }
     } else {
       return sf::Joystick::isButtonPressed(joystick_.index,

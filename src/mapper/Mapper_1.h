@@ -33,7 +33,5 @@ class Mapper_1 : public Mapper {
   const Byte *secondBankPRG_;
   const Byte *firstBankCHR_;
   const Byte *secondBankCHR_;
-
-  std::vector<Byte> characterRAM_;
 };
 }  // namespace hn

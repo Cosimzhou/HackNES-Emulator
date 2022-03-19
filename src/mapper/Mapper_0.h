@@ -19,7 +19,5 @@ class Mapper_0 : public Mapper {
  private:
   bool oneBank_;
   bool usesCharacterRAM_;
-
-  std::vector<Byte> characterRAM_;
 };
 }  // namespace hn

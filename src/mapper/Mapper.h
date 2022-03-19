@@ -47,12 +47,17 @@ class Mapper : public Serialize {
   virtual void Save(std::ostream &os) override;
   virtual void Restore(std::istream &is) override;
 
+  Memory &VRAM() { return vRam_; }
+
  protected:
   void ChangeNTMirroring(NameTableMirroring mirror);
   void FireIRQ();
   void StopIRQ();
+  void ResetVRam(size_t size = 0x2000);
 
   Cartridge &cartridge_;
   Word type_;
+
+  Memory vRam_;
 };
 }  // namespace hn

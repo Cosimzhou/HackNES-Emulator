@@ -5,34 +5,8 @@
 namespace hn {
 constexpr size_t kPRGPageSize = 0x4000;
 
-Mapper_1::Mapper_1(Cartridge &cart)
-    : Mapper(cart, 1),
-      modeCHR_(0),
-      modePRG_(3),
-      tempRegister_(0),
-      writeCounter_(0),
-      regPRG_(0),
-      regCHR0_(0),
-      regCHR1_(0),
-      firstBankPRG_(nullptr),
-      secondBankPRG_(nullptr),
-      firstBankCHR_(nullptr),
-      secondBankCHR_(nullptr) {
-  if (cart.getVROM().empty()) {
-    usesCharacterRAM_ = true;
-    characterRAM_.resize(0x2000);
-    LOG(INFO) << "Uses character RAM";
-  } else {
-    LOG(INFO) << "Using CHR-ROM";
-    usesCharacterRAM_ = false;
-    firstBankCHR_ = &cart.getVROM()[0];
-    secondBankCHR_ = &cart.getVROM()[0x1000 * regCHR1_];
-  }
+Mapper_1::Mapper_1(Cartridge &cart) : Mapper(cart, 1) {}
 
-  firstBankPRG_ = &cart.getROM()[0];  // first bank
-  secondBankPRG_ = &cart.getROM()[cart.getROM().size() - kPRGPageSize];
-  /*0x2000 * 0x0e*/  // last bank
-}
 void Mapper_1::Reset() {
   modeCHR_ = 0;
   modePRG_ = 3;
@@ -48,7 +22,7 @@ void Mapper_1::Reset() {
 
   if (cartridge_.getVROM().empty()) {
     usesCharacterRAM_ = true;
-    characterRAM_.resize(0x2000);
+    ResetVRam();
     LOG(INFO) << "Uses character RAM";
   } else {
     LOG(INFO) << "Using CHR-ROM";
@@ -161,7 +135,7 @@ void Mapper_1::calculatePRGPointers() {
 
 Byte Mapper_1::readCHR(Address addr) {
   if (usesCharacterRAM_) {
-    return characterRAM_[addr];
+    return vRam_[addr];
   } else if (addr < 0x1000) {
     return *(firstBankCHR_ + addr);
   } else {
@@ -171,7 +145,7 @@ Byte Mapper_1::readCHR(Address addr) {
 
 void Mapper_1::writeCHR(Address addr, Byte value) {
   if (usesCharacterRAM_) {
-    characterRAM_[addr] = value;
+    vRam_[addr] = value;
   } else {
     LOG(INFO) << "Read-only CHR memory write attempt at " << std::hex << addr;
   }

@@ -63,8 +63,6 @@ RecordSpeaker::~RecordSpeaker() {
   wav_file_.write(reinterpret_cast<const char *>(&data_size_), 4);
 
   wav_file_.close();
-
-  if (speaker_) delete speaker_;
 }
 
 void RecordSpeaker::PushSample(std::int16_t *data, size_t count) {
@@ -76,7 +74,7 @@ void RecordSpeaker::PushSample(std::int16_t *data, size_t count) {
 }
 
 void RecordSpeaker::SetOutSpeaker(VirtualSpeaker *speaker) {
-  speaker_ = speaker;
+  speaker_.reset(speaker);
 }
 
 void RecordSpeaker::Play() {

@@ -22,7 +22,6 @@ class Mapper_15 : public Mapper {
  private:
   Byte prgBankMode_;
   std::vector<FileAddress> bankAddr_;
-  std::vector<Byte> vRam_;
   Byte prgRom_;
   bool chrVRam_;
 };

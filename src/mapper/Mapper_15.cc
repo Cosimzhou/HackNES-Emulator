@@ -14,8 +14,7 @@ void Mapper_15::Reset() {
   bankAddr_[3] = 3;
   prgBankMode_ = 0;
 
-  vRam_.resize(0x2000);
-  std::fill(vRam_.begin(), vRam_.end(), 0);
+  ResetVRam();
   chrVRam_ = true;
 
   ChangeNTMirroring(Vertical);

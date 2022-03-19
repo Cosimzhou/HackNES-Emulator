@@ -94,8 +94,9 @@ void PatternViewer::run() {
 }
 
 void PatternViewer::UpdateImage() {
+  if (vRom_ == nullptr) return;
   auto maskIndex = kMaskColorPatternIndice[colorPattern_];
-  auto& vrom = cartridge_.getVROM();
+  auto& vrom = *vRom_;
 
   LOG(INFO) << vrom.size() << " ppu mem size: " << pictureBuffer_.size() << "x"
             << pictureBuffer_[0].size();
@@ -120,7 +121,7 @@ void PatternViewer::UpdateImage() {
 }
 
 void PatternViewer::setCartridge(Cartridge& cartridge) {
-  cartridge_ = cartridge;
+  vRom_ = &cartridge.getVROM();
 
   char buff[1024];
   sprintf(buff, "There are %lu pages in cartridge.", pageCount());
@@ -128,8 +129,10 @@ void PatternViewer::setCartridge(Cartridge& cartridge) {
   emulatorScreen_.setTip(buff);
 }
 
+void PatternViewer::setRom(const std::vector<Byte>* vRom) { vRom_ = vRom; }
+
 inline size_t PatternViewer::pageCount() const {
-  return cartridge_.getVROM().size() / kVROMPageSize;
+  return vRom_ ? vRom_->size() / kVROMPageSize : 0;
 }
 
 void PatternViewer::nextPage() {

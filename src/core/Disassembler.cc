@@ -56,7 +56,9 @@ bool Disassembler::disassemble(bool star, char* buffer) {
     return true;
   }
 
-  buf += sprintf(buf, "Unknown Code");
+  sprintf(buf, "Unknown Code");
+  sprintf(&buffer[10], "%02x", opcode);
+  buffer[12] = ' ';
 
   return false;
 }

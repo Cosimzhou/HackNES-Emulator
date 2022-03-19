@@ -3,7 +3,7 @@
 #include <chrono>
 
 #include "Cartridge.h"
-#include "devices/VirtualScreen.h"
+#include "devices/SfmlScreen.h"
 
 namespace hn {
 
@@ -15,6 +15,7 @@ class PatternViewer {
   void setVideoScale(float scale);
 
   void setCartridge(Cartridge& cartridge);
+  void setRom(const Memory* vRom);
 
   void nextPage();
   void lastPage();
@@ -28,6 +29,7 @@ class PatternViewer {
   VirtualScreenSfml emulatorScreen_;
 
   Cartridge cartridge_;
+  const Memory* vRom_;
 
   sf::RenderWindow window_;
   float screenScale_;

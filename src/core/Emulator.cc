@@ -240,6 +240,8 @@ void Emulator::Save(std::ostream &os) {
 
   Write(os, frameIdx_);
 
+  record_.Save(os);
+
   bus_.Save(os);
   pictureBus_.Save(os);
   cpu_.Save(os);
@@ -264,6 +266,8 @@ void Emulator::Restore(std::istream &is) {
   }
 
   Read(is, frameIdx_);
+
+  record_.Restore(is);
 
   bus_.Restore(is);
   pictureBus_.Restore(is);

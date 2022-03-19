@@ -13,7 +13,7 @@ void Mapper_7::Reset() {
 
   LOG(INFO) << "chrvram: " << chrVRam_ << " prg:" << +prgRom_;
   if (chrVRam_) {
-    vRam_.resize(0x2000);
+    ResetVRam();
   }
 
   ChangeNTMirroring(OneScreenLower);

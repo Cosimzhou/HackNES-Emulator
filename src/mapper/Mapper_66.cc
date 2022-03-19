@@ -4,13 +4,7 @@
 
 namespace hn {
 
-Mapper_66::Mapper_66(Cartridge &cart) : Mapper(cart, 66) {
-  prgBank_ = 0;
-  chrBank_ = 0;
-
-  prgRom_ = cart.getROM().size() >> 10;
-  chrRom_ = cart.getVROM().size() >> 10;
-}
+Mapper_66::Mapper_66(Cartridge &cart) : Mapper(cart, 66) {}
 
 Mapper_66::~Mapper_66() {}
 

@@ -1,5 +1,5 @@
 #include "core/EmulatorSfml.h"
-#include "core/devices/VirtualJoypad.h"
+#include "core/devices/SfmlJoypad.h"
 #include "gflags/gflags.h"
 #include "glog/logging.h"
 

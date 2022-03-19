@@ -41,6 +41,8 @@ using FileAddress = std::uint32_t;
 using Color = Byte;
 using RGBA = std::uint32_t;
 using TimePoint = std::chrono::high_resolution_clock::time_point;
+using Memory = std::vector<Byte>;
+using Image = std::vector<std::vector<Color>>;
 
 template <typename T>
 std::string DumpVector(const std::vector<T>& vec) {

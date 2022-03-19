@@ -27,7 +27,6 @@ class Mapper_4 : public Mapper {
   bool usesCharacterRAM_;
   size_t rom_num_;
 
-  std::vector<Byte> characterRAM_;
   // Data: 0b 1   1 ---   111
   //         CHR PRG    Register_Index
   Byte targetRegister_;

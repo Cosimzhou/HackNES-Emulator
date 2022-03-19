@@ -3,25 +3,32 @@
 #include <fstream>
 
 #include "PatternViewer.h"
+#include "devices/RecordScreen.h"
 #include "devices/RecordSpeaker.h"
-#include "devices/VirtualJoypad.h"
-#include "devices/VirtualScreen.h"
-#include "devices/VirtualSpeaker.h"
+#include "devices/SfmlJoypad.h"
+#include "devices/SfmlScreen.h"
+#include "devices/SfmlSpeaker.h"
 #include "utils.h"
 
 namespace hn {
 
-EmulatorSfml::EmulatorSfml() {
-  emulatorScreen_.reset(new VirtualScreenSfml);
+EmulatorSfml::EmulatorSfml() : Emulator() {
+  emulatorScreen_.reset(new RecordScreen);
+  dynamic_cast<RecordScreen*>(emulatorScreen_.get())
+      ->SetOutScreen(new VirtualScreenSfml);
+
   emulatorSpeaker_.reset(new RecordSpeaker("/tmp/xxx.wav"));
   dynamic_cast<RecordSpeaker*>(emulatorSpeaker_.get())
       ->SetOutSpeaker(new VirtualSpeakerSfml);
+
   emulatorJoypads_[0].reset(new VirtualJoypadSfml);
   emulatorJoypads_[1].reset(new VirtualJoypadSfml);
 }
 
 void EmulatorSfml::FrameRefresh() {
-  window_.draw(dynamic_cast<VirtualScreenSfml&>(*emulatorScreen_));
+  window_.draw(*dynamic_cast<VirtualScreenSfml*>(
+      dynamic_cast<RecordScreen*>(emulatorScreen_.get())->OutScreen()));
+  // window_.draw(dynamic_cast<VirtualScreenSfml&>(*emulatorScreen_));
   window_.display();
 }
 
@@ -95,7 +102,11 @@ void EmulatorSfml::run() {
         OnPause();
 
         PatternViewer pv;
-        pv.setCartridge(cartridge_);
+        pv.setVideoScale(screenScale_);
+        if (cartridge_.getVROM().empty())
+          pv.setRom(&mapper_->VRAM());
+        else
+          pv.setCartridge(cartridge_);
         pv.run();
 
         OnResume();

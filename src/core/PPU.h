@@ -120,9 +120,9 @@ class PPU : public Serialize {
 #endif  // PPUSTATUS_IN_BYTE
 
   std::size_t frameIndex_;
-  std::vector<Byte> spriteMemory_;
-  std::vector<Byte> scanlineSprites_;
-  std::vector<std::vector<Color>> pictureBuffer_;
+  Memory spriteMemory_;
+  Memory scanlineSprites_;
+  Image pictureBuffer_;
 };
 
 }  // namespace hn

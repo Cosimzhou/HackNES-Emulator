@@ -1,4 +1,4 @@
-#include "VirtualSpeaker.h"
+#include "SfmlSpeaker.h"
 
 #include <algorithm>
 #include <iterator>

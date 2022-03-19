@@ -13,7 +13,7 @@ void Mapper_0::Reset() {
   usesCharacterRAM_ = cartridge_.getVROM().empty();
 
   if (usesCharacterRAM_) {
-    characterRAM_.resize(0x2000);
+    ResetVRam();
     LOG(INFO) << "Uses character RAM";
   }
 }
@@ -32,7 +32,7 @@ void Mapper_0::writePRG(Address addr, Byte value) {
 
 Byte Mapper_0::readCHR(Address addr) {
   if (usesCharacterRAM_) {
-    return characterRAM_[addr];
+    return vRam_[addr];
   } else {
     return cartridge_.getVROM()[addr];
   }
@@ -40,7 +40,7 @@ Byte Mapper_0::readCHR(Address addr) {
 
 void Mapper_0::writeCHR(Address addr, Byte value) {
   if (usesCharacterRAM_) {
-    characterRAM_[addr] = value;
+    vRam_[addr] = value;
   } else {
     LOG(ERROR) << "Read-only CHR memory write attempt at " << std::hex << addr;
     // DDREPORT();

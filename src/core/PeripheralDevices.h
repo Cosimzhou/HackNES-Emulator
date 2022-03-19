@@ -5,8 +5,11 @@ namespace hn {
 
 class VirtualScreen {
  public:
+  virtual ~VirtualScreen() = default;
+
   virtual void create(unsigned int width, unsigned int height, float pixel_size,
                       Color color) = 0;
+  // virtual void setImage() = 0;
   virtual void setPixel(std::size_t x, std::size_t y, Color color) = 0;
   virtual void resize(float pixel_size) = 0;
 

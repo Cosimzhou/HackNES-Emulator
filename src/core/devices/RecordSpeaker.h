@@ -1,6 +1,8 @@
 #pragma once
 
 #include <fstream>
+#include <memory>
+
 #include "../PeripheralDevices.h"
 
 namespace hn {
@@ -19,7 +21,7 @@ class RecordSpeaker : public VirtualSpeaker {
   void SetOutSpeaker(VirtualSpeaker* speaker);
 
  protected:
-  VirtualSpeaker* speaker_;
+  std::unique_ptr<VirtualSpeaker> speaker_;
 
  private:
   DWord data_size_;

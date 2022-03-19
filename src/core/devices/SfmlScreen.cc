@@ -1,4 +1,4 @@
-#include "VirtualScreen.h"
+#include "SfmlScreen.h"
 
 #include "../PaletteColors.h"
 #include "../utils.h"

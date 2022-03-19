@@ -10,7 +10,7 @@ Mapper_4::Mapper_4(Cartridge &cart) : Mapper(cart, 4) {}
 void Mapper_4::Reset() {
   usesCharacterRAM_ = cartridge_.getVROM().empty();
   if (usesCharacterRAM_) {
-    characterRAM_.resize(0x2000);
+    ResetVRam();
     LOG(INFO) << "Uses character RAM";
   }
 
@@ -171,7 +171,7 @@ void Mapper_4::Hsync(int scanline) {
 
 void Mapper_4::DebugDump() {
   LOG(INFO) << "chrRam:" << std::boolalpha << usesCharacterRAM_
-            << " chrRamSz:" << characterRAM_.size() << " 8kRom:" << rom_num_
+            << " chrRamSz:" << vRam_.size() << " 8kRom:" << rom_num_
             << " cReg:" << +targetRegister_ << " prgBankM:" << bPRGBankMode
             << " chrInv:" << bCHRInversion << " irqAct:" << bIRQActive
             << " irqEn:" << bIRQEnable << " latch:" << +nLatch_

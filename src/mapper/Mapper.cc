@@ -5,6 +5,7 @@
 #include "Mapper_15.h"
 #include "Mapper_2.h"
 #include "Mapper_202.h"
+#include "Mapper_226.h"
 #include "Mapper_23.h"
 #include "Mapper_3.h"
 #include "Mapper_4.h"
@@ -67,6 +68,9 @@ std::unique_ptr<Mapper> Mapper::createMapper(Byte mapper_t, Cartridge &cart) {
     case 202:
       ret.reset(new Mapper_202(cart));
       break;
+    case 226:
+      ret.reset(new Mapper_226(cart));
+      break;
     default:
       break;
   }
@@ -78,6 +82,10 @@ void Mapper::ChangeNTMirroring(NameTableMirroring mirror) {
   cartridge_.bus()->ppu()->bus().updateMirroring();
 }
 
+void Mapper::ResetVRam(size_t size) {
+  vRam_.resize(size);
+  std::fill(vRam_.begin(), vRam_.end(), 0);
+}
 void Mapper::FireIRQ() { cartridge_.bus()->cpu()->TryIRQ(); }
 void Mapper::StopIRQ() { cartridge_.bus()->cpu()->ClearIRQ(); }
 

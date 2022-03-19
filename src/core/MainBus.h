@@ -54,8 +54,8 @@ class MainBus : public Serialize {
   virtual void Restore(std::istream &is) override;
 
  private:
-  std::vector<Byte> RAM_;
-  std::vector<Byte> extRAM_;
+  Memory RAM_;
+  Memory extRAM_;
   Mapper *mapper_;
   APU *apu_;
   CPU *cpu_;
