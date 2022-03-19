@@ -28,20 +28,6 @@ class VirtualSpeaker {
 
 typedef std::vector<int> KeysBinding;
 
-class JoypadInputConfig {
- public:
-  virtual bool isPressed(int) const = 0;
-
-  KeysBinding keyboard_;
-
-  struct {
-    bool inUse;
-    unsigned int index;
-    KeysBinding keyBindings_;
-
-  } joystick_;
-};
-
 class VirtualJoypad {
  public:
   enum Buttons {
@@ -58,7 +44,26 @@ class VirtualJoypad {
 
   virtual void strobe(Byte b) = 0;
   virtual Byte read() = 0;
-  virtual void setKeyBindings(const JoypadInputConfig &keys) = 0;
+  virtual void setKeyBindings(const class JoypadInputConfig &keys) = 0;
+};
+
+struct JoypadInputConfig {
+  KeysBinding keyboard_;
+
+  struct {
+    bool inUse;
+    unsigned int index;
+    KeysBinding keyBindings_;
+
+  } joystick_;
+
+  JoypadInputConfig() {
+    keyboard_ = KeysBinding(VirtualJoypad::TotalButtons);
+
+    joystick_.inUse = false;
+    joystick_.index = 0;
+    joystick_.keyBindings_ = KeysBinding(VirtualJoypad::TotalButtons);
+  }
 };
 
 }  // namespace hn

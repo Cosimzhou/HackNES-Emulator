@@ -7,13 +7,6 @@
 
 namespace hn {
 
-class ControllerInputConfig : public JoypadInputConfig {
- public:
-  ControllerInputConfig();
-
-  virtual bool isPressed(int) const;
-};
-
 class VirtualJoypadSfml : public VirtualJoypad {
  public:
   VirtualJoypadSfml();
@@ -22,10 +15,13 @@ class VirtualJoypadSfml : public VirtualJoypad {
   virtual Byte read();
   virtual void setKeyBindings(const JoypadInputConfig &keys);
 
+ protected:
+  bool isPressed(int key) const;
+
  private:
   bool strobe_;
   unsigned int keyStates_;
 
-  ControllerInputConfig input_;
+  JoypadInputConfig input_;
 };
 }  // namespace hn

@@ -1,5 +1,4 @@
 #include "core/EmulatorSfml.h"
-#include "core/devices/SfmlJoypad.h"
 #include "gflags/gflags.h"
 #include "glog/logging.h"
 
@@ -27,7 +26,7 @@ int main(int argc, char **argv) {
   gflags::ParseCommandLineFlags(&argc, &argv, true);
 
   // Default keybindings
-  hn::ControllerInputConfig p1, p2;
+  hn::JoypadInputConfig p1, p2;
   p1.keyboard_ = {sf::Keyboard::J,      sf::Keyboard::K, sf::Keyboard::RShift,
                   sf::Keyboard::Return, sf::Keyboard::W, sf::Keyboard::S,
                   sf::Keyboard::A,      sf::Keyboard::D};
