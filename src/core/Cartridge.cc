@@ -69,9 +69,9 @@ bool Cartridge::loadFromFile(std::string path) {
   }
 
   if (header.mark() != "NES\x1A") {
-    LOG(ERROR) << "Not a valid iNES image. Magic number: " << std::hex
-               << header[0] << " " << header[1] << " " << header[2] << " "
-               << int(header[3]) << std::endl
+    LOG(ERROR) << "Invalid iNES image. Magic number: '" << std::hex << header[0]
+               << header[1] << header[2] << +header[3]
+               << "' == " << header.mark() << std::endl
                << "Valid magic number : N E S 1a";
     return false;
   }

@@ -6,8 +6,9 @@
 namespace hn {
 class RecordScreen : public VirtualScreen {
  public:
-  RecordScreen();
+  RecordScreen(const std::string& file_path);
   virtual ~RecordScreen();
+
   virtual void create(unsigned int width, unsigned int height, float pixel_size,
                       Color color);
   virtual void setPixel(std::size_t x, std::size_t y, Color color);
@@ -24,6 +25,7 @@ class RecordScreen : public VirtualScreen {
  private:
   Memory buffer_;
 
+  std::string file_path_;
   std::unique_ptr<VirtualScreen> screen_;
 };
 

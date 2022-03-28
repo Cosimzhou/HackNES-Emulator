@@ -1,13 +1,27 @@
 #include "utils.h"
 namespace hn {
 
-std::string Helper::GenImageCaptureName() {
+std::string Helper::Timemark() {
   char buffer[1024];
   time_t now = time(nullptr);
   struct tm* ltime = localtime(&now);
-  sprintf(buffer, "/tmp/capture-%d%02d%02d_%02d%02d%02d.png",
-          1900 + ltime->tm_year, ltime->tm_mon, ltime->tm_mday, ltime->tm_hour,
-          ltime->tm_min, ltime->tm_sec);
+  sprintf(buffer, "%d%02d%02d_%02d%02d%02d", 1900 + ltime->tm_year,
+          ltime->tm_mon, ltime->tm_mday, ltime->tm_hour, ltime->tm_min,
+          ltime->tm_sec);
+
+  return std::string(buffer);
+}
+
+std::string Helper::SequenceImageName(const std::string& hint) {
+  char buffer[1024];
+  sprintf(buffer, "/tmp/capture-%s.png", Timemark().c_str());
+
+  return std::string(buffer);
+}
+
+std::string Helper::GenImageCaptureName() {
+  char buffer[1024];
+  sprintf(buffer, "/tmp/capture-%s.png", Timemark().c_str());
 
   return std::string(buffer);
 }

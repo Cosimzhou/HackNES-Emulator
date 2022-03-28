@@ -84,7 +84,7 @@ void PPU::Reset() {
   dataAddress_ = cycle_ = scanline_ = oamDataAddress_ = fineXScroll_ =
       tempAddress_ = 0;
   frameIndex_ = 0;
-  // baseNameTable_ = 0x2000;
+
   dataAddrIncrement_ = 1;
   pipelineState_ = PreRender;
   scanlineSprites_.reserve(8);
@@ -94,15 +94,19 @@ void PPU::Reset() {
 void PPU::Step() {
   switch (pipelineState_) {
     case PreRender:
+      // 340 * 339
       preRender();
       break;
     case Render:
+      // 340 * 240
       render();
       break;
     case PostRender:
+      // 340 * 1
       postRender();
       break;
     case VerticalBlank:
+      // 340 * (260-240)
       vBlank();
       break;
     default:
@@ -415,12 +419,12 @@ void PPU::doDMA(const Byte *page_ptr) {
 void PPU::control(Byte ctrl) {
 #ifdef PPUCONTROL_IN_BYTE
   ppu_control_ = ctrl;
-#else   // PPUCONTROL_IN_BYTE
+#else  // PPUCONTROL_IN_BYTE
   generateInterrupt_ = ctrl & 0x80;
   longSprites_ = ctrl & 0x20;
   bgPage_ = static_cast<CharacterPage>(!!(ctrl & 0x10));
   sprPage_ = static_cast<CharacterPage>(!!(ctrl & 0x8));
-  // baseNameTable_ = (ctrl & 0x3) * 0x400 + 0x2000;
+
 #endif  // PPUCONTROL_IN_BYTE
 
   dataAddrIncrement_ = (ctrl & 0x4) ? 0x20 : 1;

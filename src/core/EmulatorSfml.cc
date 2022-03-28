@@ -13,11 +13,12 @@
 namespace hn {
 
 EmulatorSfml::EmulatorSfml() : Emulator() {
-  emulatorScreen_.reset(new RecordScreen);
+  auto tm = Helper::Timemark();
+  emulatorScreen_.reset(new RecordScreen("/tmp/screen-" + tm + ".bmp"));
   dynamic_cast<RecordScreen*>(emulatorScreen_.get())
       ->SetOutScreen(new VirtualScreenSfml);
 
-  emulatorSpeaker_.reset(new RecordSpeaker("/tmp/xxx.wav"));
+  emulatorSpeaker_.reset(new RecordSpeaker("/tmp/xxx-" + tm + ".wav"));
   dynamic_cast<RecordSpeaker*>(emulatorSpeaker_.get())
       ->SetOutSpeaker(new VirtualSpeakerSfml);
 

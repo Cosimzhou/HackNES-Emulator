@@ -33,10 +33,10 @@ class Emulator : public Serialize {
   enum { PLAYING, RECORDING, RECORDED, REPLAY } workMode_;
 
   bool LoadCartridge(const std::string &rom_path);
-  void SetCartridge(const Cartridge &cartridge);
-  void SetRecordFile(const std::string &file) { record_file_ = file; }
+  void setCartridge(const Cartridge &cartridge);
+  // void setRecordFile(const std::string &file) { record_file_ = file; }
 
-  OperatingRecord record_;
+  void SetRecordMode(bool recording, const std::string &record_file);
 
   void Pause();
   void Resume();
@@ -57,6 +57,8 @@ class Emulator : public Serialize {
   void OnPause();
   void OnResume();
   void ToggleWorkMode();
+
+  OperatingRecord record_;
 
   std::unique_ptr<VirtualScreen> emulatorScreen_;
   std::unique_ptr<VirtualSpeaker> emulatorSpeaker_;

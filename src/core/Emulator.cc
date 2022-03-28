@@ -8,6 +8,8 @@
 #include "utils.h"
 
 namespace hn {
+constexpr uint32_t kSaveDocMark = 0x1a444e48;
+
 Emulator::Emulator()
     : cpu_(bus_),
       ppu_(bus_, pictureBus_),
@@ -15,6 +17,7 @@ Emulator::Emulator()
       goldfinger_(bus_),
       screenScale_(2.f),
       cycleTimer_(),
+      workMode_(RECORDING),
       cpuCycleDuration_(std::chrono::nanoseconds(560)) {}
 
 void Emulator::Reset() {
@@ -168,6 +171,7 @@ void Emulator::Resume() {}
 void Emulator::OnPause() { emulatorSpeaker_->Stop(); }
 void Emulator::OnResume() { emulatorSpeaker_->Play(); }
 void Emulator::setVideoHeight(int height) {
+  if (height < 0) return;
   screenScale_ = height / float(NESVideoHeight);
   LOG(INFO) << "Scale: " << screenScale_ << " set. Screen: "
             << static_cast<int>(NESVideoWidth * screenScale_) << "x"
@@ -175,6 +179,7 @@ void Emulator::setVideoHeight(int height) {
 }
 
 void Emulator::setVideoWidth(int width) {
+  if (width < 0) return;
   screenScale_ = width / float(NESVideoWidth);
   LOG(INFO) << "Scale: " << screenScale_ << " set. Screen: "
             << static_cast<int>(NESVideoWidth * screenScale_) << "x"
@@ -182,6 +187,7 @@ void Emulator::setVideoWidth(int width) {
 }
 
 void Emulator::setVideoScale(float scale) {
+  if (scale < 0) return;
   screenScale_ = scale;
   LOG(INFO) << "Scale: " << screenScale_ << " set. Screen: "
             << static_cast<int>(NESVideoWidth * screenScale_) << "x"
@@ -202,8 +208,26 @@ bool Emulator::LoadCartridge(const std::string &rom_path) {
   return true;
 }
 
-void Emulator::SetCartridge(const Cartridge &cartridge) {
+void Emulator::setCartridge(const Cartridge &cartridge) {
   cartridge_ = cartridge;
+}
+
+void Emulator::SetRecordMode(bool recording, const std::string &record_file) {
+  record_file_ = record_file;
+  if (!record_file_.empty()) {
+    if (recording) {
+      workMode_ = RECORDING;
+      record_.Save(record_file_);
+    } else {
+      workMode_ = REPLAY;
+      record_.Load(record_file_);
+    }
+  } else {
+    if (recording) {
+      workMode_ = RECORDING;
+    }
+    record_.Save("/tmp/test.rcd");
+  }
 }
 
 void Emulator::RestoreRecord() {
@@ -236,6 +260,7 @@ void Emulator::DebugDump() {
 }
 
 void Emulator::Save(std::ostream &os) {
+  WriteNum(os, kSaveDocMark);
   WriteNum(os, 1);
 
   Write(os, frameIdx_);
@@ -260,6 +285,12 @@ void Emulator::Save(std::ostream &os) {
 
 void Emulator::Restore(std::istream &is) {
   uint32_t version = ReadNum(is);
+  if (version != kSaveDocMark) {
+    LOG(ERROR) << "It is not a save doc";
+    return;
+  }
+
+  version = ReadNum(is);
   if (version != 1) {
     LOG(ERROR) << "Unsupport recording file version";
     return;
