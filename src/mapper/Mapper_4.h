@@ -19,6 +19,9 @@ class Mapper_4 : public Mapper {
   virtual void DebugDump() override;
   virtual void Hsync(int scanline) override;
 
+  virtual void Save(std::ostream &os) override;
+  virtual void Restore(std::istream &is) override;
+
  protected:
   void updatePPUBank();
   void updateCPUBank();

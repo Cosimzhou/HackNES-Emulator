@@ -150,4 +150,26 @@ void Mapper_1::writeCHR(Address addr, Byte value) {
     LOG(INFO) << "Read-only CHR memory write attempt at " << std::hex << addr;
   }
 }
+
+void Mapper_1::Save(std::ostream &os) {
+  Mapper::Save(os);
+
+  Write(os, usesCharacterRAM_);
+  Write(os, modeCHR_);
+  Write(os, modePRG_);
+
+  Write(os, tempRegister_);
+  Write(os, writeCounter_);
+
+  Write(os, regPRG_);
+  Write(os, regCHR0_);
+  Write(os, regCHR1_);
+
+  const Byte *firstBankPRG_;
+  const Byte *secondBankPRG_;
+  const Byte *firstBankCHR_;
+  const Byte *secondBankCHR_;
+}
+
+void Mapper_1::Restore(std::istream &is) { Mapper::Restore(is); }
 }  // namespace hn

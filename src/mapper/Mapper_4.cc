@@ -180,4 +180,53 @@ void Mapper_4::DebugDump() {
             << " prgBank:" << DumpVector(pPRGBank)
             << " chrBank:" << DumpVector(pCHRBank);
 }
+
+void Mapper_4::Save(std::ostream &os) {
+  Mapper::Save(os);
+
+  Write(os, usesCharacterRAM_);
+  Write(os, rom_num_);
+
+  Write(os, targetRegister_);
+  Write(os, bPRGBankMode);
+  Write(os, bCHRInversion);  // Invert
+
+  Write(os, bIRQActive);
+  Write(os, bIRQEnable);
+  Write(os, bIRQUpdate);
+
+  Write(os, nIRQCounter);
+  Write(os, nIRQReload);
+  Write(os, nLatch_);
+
+  Write(os, pRegister);
+
+  Write(os, pCHRBank);
+  Write(os, pPRGBank);
+}
+
+void Mapper_4::Restore(std::istream &is) {
+  Mapper::Restore(is);
+
+  Read(is, usesCharacterRAM_);
+  Read(is, rom_num_);
+
+  Read(is, targetRegister_);
+  Read(is, bPRGBankMode);
+  Read(is, bCHRInversion);  // Invert
+
+  Read(is, bIRQActive);
+  Read(is, bIRQEnable);
+  Read(is, bIRQUpdate);
+
+  Read(is, nIRQCounter);
+  Read(is, nIRQReload);
+  Read(is, nLatch_);
+
+  Read(is, pRegister);
+
+  Read(is, pCHRBank);
+  Read(is, pPRGBank);
+}
+
 };  // namespace hn

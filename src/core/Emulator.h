@@ -34,7 +34,6 @@ class Emulator : public Serialize {
 
   bool LoadCartridge(const std::string &rom_path);
   void setCartridge(const Cartridge &cartridge);
-  // void setRecordFile(const std::string &file) { record_file_ = file; }
 
   void SetRecordMode(bool recording, const std::string &record_file);
 
@@ -85,7 +84,6 @@ class Emulator : public Serialize {
 
   size_t frameIdx_;
   std::string record_file_;
-  // std::vector<std::map<size_t, Byte>> joypad_record_;
   std::chrono::high_resolution_clock::duration elapsedTime_;
   std::chrono::nanoseconds cpuCycleDuration_;
 };

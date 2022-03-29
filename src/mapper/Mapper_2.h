@@ -14,12 +14,13 @@ class Mapper_2 : public Mapper {
 
   virtual std::string mapper_name() const { return "UxROM"; }
 
+  virtual void Save(std::ostream &os) override;
+  virtual void Restore(std::istream &is) override;
+
  private:
   bool usesCharacterRAM_;
 
   const Byte *lastBankPtr_;
   Address selectPRG_;
-
-  std::vector<Byte> characterRAM_;
 };
 }  // namespace hn

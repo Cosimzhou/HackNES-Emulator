@@ -3,7 +3,7 @@
 #include "gflags/gflags.h"
 #include "glog/logging.h"
 
-DEFINE_bool(recording, false, "Specify recording mode");
+DEFINE_bool(replaying, false, "Specify recording mode");
 DEFINE_bool(print, false, "Specify recording mode");
 DEFINE_string(record, "", "Specify recording file");
 DEFINE_double(vrate, -1,
@@ -43,15 +43,15 @@ int main(int argc, char **argv) {
   hn::parseControllerConf("keybindings.conf", p1, p2);
 
   hn::EmulatorSfml emulator;
+  emulator.setKeys(p1, p2);
   emulator.setVideoScale(FLAGS_vrate);
   emulator.setVideoWidth(FLAGS_width);
   emulator.setVideoHeight(FLAGS_height);
 
   emulator.setCartridge(cart);
 
-  emulator.SetRecordMode(FLAGS_recording, FLAGS_record);
+  emulator.SetRecordMode(FLAGS_replaying, FLAGS_record);
 
-  emulator.setKeys(p1, p2);
   emulator.run();
 
   return 0;

@@ -16,6 +16,9 @@ class Mapper_0 : public Mapper {
   virtual std::string mapper_name() const { return "NROM"; }
   virtual void DebugDump() override;
 
+  virtual void Save(std::ostream &os) override;
+  virtual void Restore(std::istream &is) override;
+
  private:
   bool oneBank_;
   bool usesCharacterRAM_;

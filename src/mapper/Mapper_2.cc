@@ -42,4 +42,22 @@ void Mapper_2::writeCHR(Address addr, Byte value) {
     LOG(INFO) << "Read-only CHR memory write attempt at " << std::hex << addr;
   }
 }
+void Mapper_2::Save(std::ostream &os) {
+  Mapper::Save(os);
+
+  Write(os, usesCharacterRAM_);
+  // const Byte *lastBankPtr_;
+  Write(os, selectPRG_);
+}
+
+void Mapper_2::Restore(std::istream &is) {
+  Mapper::Restore(is);
+
+  Read(is, usesCharacterRAM_);
+  // const Byte *lastBankPtr_;
+  Read(is, selectPRG_);
+
+  lastBankPtr_ = &cartridge_.getROM()[cartridge_.getROM().size() - 0x4000];
+}
+
 }  // namespace hn

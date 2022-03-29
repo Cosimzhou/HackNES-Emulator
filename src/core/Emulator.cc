@@ -212,22 +212,23 @@ void Emulator::setCartridge(const Cartridge &cartridge) {
   cartridge_ = cartridge;
 }
 
-void Emulator::SetRecordMode(bool recording, const std::string &record_file) {
+void Emulator::SetRecordMode(bool replay, const std::string &record_file) {
+  workMode_ = replay ? REPLAY : RECORDING;
   record_file_ = record_file;
-  if (!record_file_.empty()) {
-    if (recording) {
-      workMode_ = RECORDING;
-      record_.Save(record_file_);
-    } else {
-      workMode_ = REPLAY;
-      record_.Load(record_file_);
-    }
-  } else {
-    if (recording) {
-      workMode_ = RECORDING;
-    }
-    record_.Save("/tmp/test.rcd");
-  }
+  // if (!record_file_.empty()) {
+  //  if (recording) {
+  //    workMode_ = RECORDING;
+  //    // record_.Save(record_file_);
+  //  } else {
+  //    // workMode_ = REPLAY;
+  //    // record_.Load(record_file_);
+  //  }
+  //} else {
+  //  if (recording) {
+  //    workMode_ = RECORDING;
+  //  }
+  //  // record_.Save("/tmp/test.rcd");
+  //}
 }
 
 void Emulator::RestoreRecord() {
@@ -263,10 +264,13 @@ void Emulator::Save(std::ostream &os) {
   WriteNum(os, kSaveDocMark);
   WriteNum(os, 1);
 
-  Write(os, frameIdx_);
-
+  // Operations recording
   record_.Save(os);
 
+  // Member variable
+  Write(os, frameIdx_);
+
+  // Components
   bus_.Save(os);
   pictureBus_.Save(os);
   cpu_.Save(os);
@@ -274,13 +278,6 @@ void Emulator::Save(std::ostream &os) {
   apu_.Save(os);
   // Cartridge cartridge_;
   mapper_->Save(os);
-
-  // GoldFinger goldfinger_;
-
-  // TimePoint cycleTimer_;
-  // std::vector<std::map<size_t, Byte>> joypad_record_;
-  // std::chrono::high_resolution_clock::duration elapsedTime_;
-  // std::chrono::nanoseconds cpuCycleDuration_;
 }
 
 void Emulator::Restore(std::istream &is) {
@@ -296,10 +293,14 @@ void Emulator::Restore(std::istream &is) {
     return;
   }
 
+  // Operations recording
+  record_.Restore(is);
+  if (workMode_ == REPLAY) break;
+
+  // Member variable
   Read(is, frameIdx_);
 
-  record_.Restore(is);
-
+  // Components
   bus_.Restore(is);
   pictureBus_.Restore(is);
   cpu_.Restore(is);

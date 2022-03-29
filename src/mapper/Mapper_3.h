@@ -15,6 +15,9 @@ class Mapper_3 : public Mapper {
 
   virtual std::string mapper_name() const { return "CNROM"; }
 
+  virtual void Save(std::ostream &os) override;
+  virtual void Restore(std::istream &is) override;
+
  private:
   bool oneBank_;
 

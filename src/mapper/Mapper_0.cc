@@ -52,4 +52,18 @@ void Mapper_0::DebugDump() {
             << " chrRam:" << usesCharacterRAM_;
 }
 
+void Mapper_0::Save(std::ostream &os) {
+  Mapper::Save(os);
+
+  Write(os, oneBank_);
+  Write(os, usesCharacterRAM_);
+}
+
+void Mapper_0::Restore(std::istream &is) {
+  Mapper::Restore(is);
+
+  Read(is, oneBank_);
+  Read(is, usesCharacterRAM_);
+}
+
 }  // namespace hn

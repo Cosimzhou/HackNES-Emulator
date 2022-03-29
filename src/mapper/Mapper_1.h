@@ -15,6 +15,9 @@ class Mapper_1 : public Mapper {
 
   virtual std::string mapper_name() const { return "MMC1"; }
 
+  virtual void Save(std::ostream &os) override;
+  virtual void Restore(std::istream &is) override;
+
  private:
   void calculatePRGPointers();
 

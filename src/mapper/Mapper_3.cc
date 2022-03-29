@@ -31,4 +31,19 @@ Byte Mapper_3::readCHR(Address addr) {
 void Mapper_3::writeCHR(Address addr, Byte value) {
   LOG(INFO) << "Read-only CHR memory write attempt at " << std::hex << addr;
 }
+
+void Mapper_3::Save(std::ostream &os) {
+  Mapper::Save(os);
+
+  Write(os, oneBank_);
+  Write(os, selectCHR_);
+}
+
+void Mapper_3::Restore(std::istream &is) {
+  Mapper::Restore(is);
+
+  Read(is, oneBank_);
+  Read(is, selectCHR_);
+}
+
 }  // namespace hn

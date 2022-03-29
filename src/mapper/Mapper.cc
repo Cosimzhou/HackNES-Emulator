@@ -89,6 +89,14 @@ void Mapper::ResetVRam(size_t size) {
 void Mapper::FireIRQ() { cartridge_.bus()->cpu()->TryIRQ(); }
 void Mapper::StopIRQ() { cartridge_.bus()->cpu()->ClearIRQ(); }
 
-void Mapper::Save(std::ostream &os) { Write(os, type_); }
-void Mapper::Restore(std::istream &is) { Read(is, type_); }
+void Mapper::Save(std::ostream &os) {
+  Write(os, type_);
+
+  Write(os, vRam_);
+}
+void Mapper::Restore(std::istream &is) {
+  Read(is, type_);
+
+  Read(is, vRam_);
+}
 }  // namespace hn
