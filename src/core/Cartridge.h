@@ -91,6 +91,7 @@ class Cartridge {
   bool setBus(MainBus *bus);
   MainBus *bus() const;
 
+  std::string nes_path() const { return nesPath_; }
   const CartridgeHeader &header() const { return header_; }
 
  private:
@@ -105,6 +106,8 @@ class Cartridge {
   bool chrRAM_;
 
   MainBus *bus_;
+
+  std::string nesPath_;
 };
 
 };  // namespace hn

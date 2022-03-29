@@ -54,6 +54,7 @@ bool Cartridge::setBus(MainBus *bus) {
 MainBus *Cartridge::bus() const { return bus_; }
 
 bool Cartridge::loadFromFile(std::string path) {
+  nesPath_ = path;
   std::ifstream romFile(path, std::ios_base::binary | std::ios_base::in);
   if (!romFile) {
     LOG(ERROR) << "Could not open ROM file from path: " << path;

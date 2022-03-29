@@ -171,5 +171,21 @@ void Mapper_1::Save(std::ostream &os) {
   const Byte *secondBankCHR_;
 }
 
-void Mapper_1::Restore(std::istream &is) { Mapper::Restore(is); }
+void Mapper_1::Restore(std::istream &is) {
+  Mapper::Restore(is);
+
+  Read(is, usesCharacterRAM_);
+  Read(is, modeCHR_);
+  Read(is, modePRG_);
+
+  Read(is, tempRegister_);
+  Read(is, writeCounter_);
+
+  Read(is, regPRG_);
+  Read(is, regCHR0_);
+  Read(is, regCHR1_);
+
+  calculatePRGPointers();
+}
+
 }  // namespace hn

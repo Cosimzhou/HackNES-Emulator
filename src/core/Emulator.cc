@@ -64,8 +64,8 @@ bool Emulator::HardwareSetup() {
   }
 
   record_.setFinishCallback([&]() {
-    workMode_ = REPLAY;
-    emulatorScreen_->setTip("Start replay");
+    workMode_ = RECORDING;
+    emulatorScreen_->setTip("Continue to play");
   });
 
   mapper_ = Mapper::createMapper(cartridge_.getMapper(), cartridge_);
@@ -187,7 +187,7 @@ void Emulator::setVideoWidth(int width) {
 }
 
 void Emulator::setVideoScale(float scale) {
-  if (scale < 0) return;
+  if (scale <= 0) return;
   screenScale_ = scale;
   LOG(INFO) << "Scale: " << screenScale_ << " set. Screen: "
             << static_cast<int>(NESVideoWidth * screenScale_) << "x"
@@ -210,25 +210,13 @@ bool Emulator::LoadCartridge(const std::string &rom_path) {
 
 void Emulator::setCartridge(const Cartridge &cartridge) {
   cartridge_ = cartridge;
+
+  goldfinger_.LoadFile(cartridge_.nes_path() + ".cht");
 }
 
 void Emulator::SetRecordMode(bool replay, const std::string &record_file) {
   workMode_ = replay ? REPLAY : RECORDING;
   record_file_ = record_file;
-  // if (!record_file_.empty()) {
-  //  if (recording) {
-  //    workMode_ = RECORDING;
-  //    // record_.Save(record_file_);
-  //  } else {
-  //    // workMode_ = REPLAY;
-  //    // record_.Load(record_file_);
-  //  }
-  //} else {
-  //  if (recording) {
-  //    workMode_ = RECORDING;
-  //  }
-  //  // record_.Save("/tmp/test.rcd");
-  //}
 }
 
 void Emulator::RestoreRecord() {
@@ -295,7 +283,7 @@ void Emulator::Restore(std::istream &is) {
 
   // Operations recording
   record_.Restore(is);
-  if (workMode_ == REPLAY) break;
+  if (workMode_ == REPLAY) return;
 
   // Member variable
   Read(is, frameIdx_);

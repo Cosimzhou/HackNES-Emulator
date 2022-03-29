@@ -18,10 +18,12 @@ class Mapper_7 : public Mapper {
 
   virtual void DebugDump() override;
 
+  virtual void Save(std::ostream &os) override;
+  virtual void Restore(std::istream &is) override;
+
  protected:
  private:
   Byte prgBank_;
-  std::vector<Byte> vRam_;
   Byte prgRom_;
   bool chrVRam_;
 };

@@ -20,7 +20,7 @@ class PictureBus : public Serialize {
   virtual void Restore(std::istream& is) override;
 
  private:
-  std::vector<Byte> RAM_;
+  Memory RAM_;
   std::vector<size_t> NameTable_;  // indices where they start in RAM vector
 
   std::vector<Byte> palette_;

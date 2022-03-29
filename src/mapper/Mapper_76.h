@@ -18,6 +18,9 @@ class Mapper_76 : public Mapper {
 
   virtual void DebugDump() override;
 
+  virtual void Save(std::ostream &os) override;
+  virtual void Restore(std::istream &is) override;
+
  protected:
  private:
   std::vector<Byte> regs_;

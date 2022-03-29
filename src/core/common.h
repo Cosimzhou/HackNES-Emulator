@@ -32,6 +32,7 @@
 #define DDTRY()
 #define DDCATCH()
 #endif
+
 namespace hn {
 using Byte = std::uint8_t;
 using Word = std::uint16_t;
@@ -92,14 +93,17 @@ class Serialize {
   void WriteNum(std::ostream& os, uint32_t data) {
     os.write(reinterpret_cast<const char*>(&data), sizeof(data));
   }
+
   uint32_t ReadNum(std::istream& is) {
     uint32_t data;
     is.read(reinterpret_cast<char*>(&data), sizeof(data));
     return data;
   }
+
   void WriteLNum(std::ostream& os, uint64_t data) {
     os.write(reinterpret_cast<const char*>(&data), sizeof(data));
   }
+
   uint64_t ReadLNum(std::istream& is) {
     uint64_t data;
     is.read(reinterpret_cast<char*>(&data), sizeof(data));

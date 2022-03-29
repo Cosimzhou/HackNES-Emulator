@@ -95,4 +95,19 @@ void Mapper_76::writeCHR(Address addr, Byte value) {
 
 void Mapper_76::DebugDump() {}
 
+void Mapper_76::Save(std::ostream &os) {
+  Mapper::Save(os);
+
+  Write(os, prgRom_);
+  Write(os, selReg_);
+  Write(os, regs_);
+}
+
+void Mapper_76::Restore(std::istream &is) {
+  Mapper::Restore(is);
+
+  Read(is, prgRom_);
+  Read(is, selReg_);
+  Read(is, regs_);
+}
 };  // namespace hn

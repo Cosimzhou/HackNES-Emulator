@@ -71,15 +71,15 @@ bool Disassembler::explainImplied(Byte opcode, char* buffer) {
 
   switch (static_cast<OperationImplied>(opcode)) {
     case JMP:
-      buffer += sprintf(buffer, "JMP 0x%04x", bus_.readAddress(PC_));
+      buffer += sprintf(buffer, "JMP $%04x", bus_.readAddress(PC_));
       PC_ += 2;
       break;
     case JMPI:
-      buffer += sprintf(buffer, "JMPI [0x%04x]", bus_.readAddress(PC_));
+      buffer += sprintf(buffer, "JMPI [$%04x]", bus_.readAddress(PC_));
       PC_ += 2;
       break;
     case JSR:
-      buffer += sprintf(buffer, "JSR 0x%04x", bus_.readAddress(PC_));
+      buffer += sprintf(buffer, "JSR $%04x", bus_.readAddress(PC_));
       PC_ += 2;
       break;
 
@@ -133,7 +133,7 @@ bool Disassembler::explainBranch(Byte opcode, char* buffer) {
   *buffer++ = ' ';
 
   int8_t offset = bus_.read(PC_++);
-  sprintf(buffer, "0x%04x", PC_ + offset);
+  sprintf(buffer, "$%04x", PC_ + offset);
 
   return true;
 }
@@ -171,25 +171,25 @@ bool Disassembler::explainType1(Byte opcode, char* buffer) {
       sprintf(buffer, "ZeroPage[%02x]", bus_.read(PC_++));
       break;
     case Immediate:
-      sprintf(buffer, "0x%02x", bus_.read(PC_++));
+      sprintf(buffer, "$%02x", bus_.read(PC_++));
       break;
     case Absolute:
-      sprintf(buffer, "[0x%04x]", bus_.readAddress(PC_));
+      sprintf(buffer, "[$%04x]", bus_.readAddress(PC_));
       PC_ += 2;
       break;
     case IndirectY:
-      sprintf(buffer, "[%%Y+[0x%02x]]", bus_.read(PC_++));
+      sprintf(buffer, "[%%Y+[$%02x]]", bus_.read(PC_++));
       break;
     case IndexedX:
       // Address wraps around in the zero page
-      sprintf(buffer, "[%%X+0x%02x]", bus_.read(PC_++));
+      sprintf(buffer, "[%%X+$%02x]", bus_.read(PC_++));
       break;
     case AbsoluteY:
-      sprintf(buffer, "[%%Y+0x%04x]", bus_.readAddress(PC_));
+      sprintf(buffer, "[%%Y+$%04x]", bus_.readAddress(PC_));
       PC_ += 2;
       break;
     case AbsoluteX:
-      sprintf(buffer, "[%%X+0x%04x]", bus_.readAddress(PC_));
+      sprintf(buffer, "[%%X+$%04x]", bus_.readAddress(PC_));
       PC_ += 2;
       break;
     default:
@@ -229,24 +229,24 @@ bool Disassembler::explainType2(Byte opcode, char* buffer) {
   auto addr_mode = OPADDRMODE(opcode, 2);
   switch (addr_mode) {
     case Immediate_:
-      sprintf(buffer, "0x%02x", bus_.read(PC_++));
+      sprintf(buffer, "$%02x", bus_.read(PC_++));
       break;
     case ZeroPage_:
-      sprintf(buffer, "[0x%02x]", bus_.read(PC_++));
+      sprintf(buffer, "[$%02x]", bus_.read(PC_++));
       break;
     case Accumulator:
       sprintf(buffer, "%%A");
       break;
     case Absolute_:
-      sprintf(buffer, "[0x%04x]", bus_.readAddress(PC_));
+      sprintf(buffer, "[$%04x]", bus_.readAddress(PC_));
       PC_ += 2;
       break;
     case Indexed:
-      sprintf(buffer, "[0x%02x+%%%c]", bus_.read(PC_++),
+      sprintf(buffer, "[$%02x+%%%c]", bus_.read(PC_++),
               (op == LDX || op == STX ? 'Y' : 'X'));
       break;
     case AbsoluteIndexed:
-      sprintf(buffer, "[0x%02x+%%%c]", bus_.readAddress(PC_),
+      sprintf(buffer, "[$%02x+%%%c]", bus_.readAddress(PC_),
               (op == LDX || op == STX ? 'Y' : 'X'));
       PC_ += 2;
       break;
@@ -281,25 +281,25 @@ bool Disassembler::explainType0(Byte opcode, char* buffer) {
   switch (OPADDRMODE(opcode, 2)) {
     case Immediate_:
       // Imm
-      sprintf(buffer, "0x%02x", bus_.read(PC_++));
+      sprintf(buffer, "$%02x", bus_.read(PC_++));
       // location = PC_++;
       break;
     case ZeroPage_:
       // [PC]
-      sprintf(buffer, "[0x%02x]", bus_.read(PC_++));
+      sprintf(buffer, "[$%02x]", bus_.read(PC_++));
       // location = bus_.read(PC_++);
       break;
     case Absolute_:
       // [:PC]
-      sprintf(buffer, "[0x%04x]", bus_.readAddress(PC_));
+      sprintf(buffer, "[$%04x]", bus_.readAddress(PC_));
       PC_ += 2;
       break;
     case Indexed:
       // Address wraps around in the zero page
-      sprintf(buffer, "[0x%02x+X]", bus_.read(PC_++));
+      sprintf(buffer, "[$%02x+X]", bus_.read(PC_++));
       break;
     case AbsoluteIndexed:
-      sprintf(buffer, "[0x%04x+X]", bus_.readAddress(PC_));
+      sprintf(buffer, "[$%04x+X]", bus_.readAddress(PC_));
       PC_ += 2;
       break;
     default:

@@ -3,12 +3,10 @@
 #include "gflags/gflags.h"
 #include "glog/logging.h"
 
-DEFINE_bool(replaying, false, "Specify recording mode");
-DEFINE_bool(print, false, "Specify recording mode");
+DEFINE_bool(replaying, false, "Specify replaying mode");
+DEFINE_bool(print, false, "Specify the verboss inform output");
 DEFINE_string(record, "", "Specify recording file");
-DEFINE_double(vrate, -1,
-              "Set the width of the emulation screen (height is set "
-              "automatically to fit the aspect ratio)");
+DEFINE_double(vrate, -1, "Set the pixel scale of the emulation screen");
 DEFINE_int32(width, -1,
              "Set the width of the emulation screen (height is set "
              "automatically to fit the aspect ratio)");
@@ -23,6 +21,7 @@ int main(int argc, char **argv) {
   for (int i = 1; i < argc; i++) {
     if (!cart.loadFromFile(argv[i])) {
       LOG(ERROR) << "Load ROM failed: " << argv[i] << std::endl;
+
       return 1;
     }
   }
@@ -47,7 +46,6 @@ int main(int argc, char **argv) {
   emulator.setVideoScale(FLAGS_vrate);
   emulator.setVideoWidth(FLAGS_width);
   emulator.setVideoHeight(FLAGS_height);
-
   emulator.setCartridge(cart);
 
   emulator.SetRecordMode(FLAGS_replaying, FLAGS_record);
