@@ -282,6 +282,16 @@ std::string MainBus::getPageContent(Address page) {
   return ss.str();
 }
 
+void MainBus::Reset() {
+  RAM_.resize(kRAMSize);
+  std::fill(RAM_.begin(), RAM_.end(), 0);
+
+  if (mapper_->hasExtendedRAM()) {
+    extRAM_.resize(kExtRAMSize);
+    std::fill(extRAM_.begin(), extRAM_.end(), 0);
+  }
+}
+
 void MainBus::Tick() { mapper_->Tick(); }
 void MainBus::DebugDump() { LOG(INFO) << "ZeroPage:\n" << getPageContent(0); }
 

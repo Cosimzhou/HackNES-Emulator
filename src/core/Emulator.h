@@ -21,6 +21,7 @@ const int NESVideoHeight = VisibleScanlines;
 class Emulator : public Serialize {
  public:
   Emulator();
+  virtual ~Emulator() = default;
 
   virtual void run() = 0;
   virtual void FrameRefresh() = 0;
@@ -53,8 +54,10 @@ class Emulator : public Serialize {
   void RestoreRecord();
   void SaveRecord();
 
-  void OnPause();
-  void OnResume();
+  void LostFocus();
+  void GetFocus();
+  virtual void OnPause();
+  virtual void OnResume();
   void ToggleWorkMode();
 
   OperatingRecord record_;
@@ -70,6 +73,8 @@ class Emulator : public Serialize {
   Cartridge cartridge_;
 
   std::unique_ptr<Mapper> mapper_;
+
+  bool pausing_;
 
  private:
   void DMA(Byte page);

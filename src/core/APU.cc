@@ -6,6 +6,9 @@
 #include "CPU.h"
 #include "glog/logging.h"
 
+#define APU_FLOAT_MIX
+//#define APU_MAKE_CYCLE
+
 // Ref:
 //    https://wiki.nesdev.org/w/index.php?title=APU
 //
@@ -148,26 +151,19 @@ void APU::ProcessFrameCounter() {
 
 int16_t APU::SoundMixer(Byte pulse1, Byte pulse2, Byte triangle, Byte noise,
                         Byte dmc) {
-#if 1
+#ifdef APU_FLOAT_MIX
   //混合
   float square_out = 95.88f / ((8128.f / (pulse1 + pulse2)) + 100.f);
   float tnd_out =
       159.79f /
       (1.f / (triangle / 8227.f + noise / 12241.f + dmc / 22638.f) + 100.f);
-  float outputf = (float)(square_out + tnd_out);
-#else
+#else   // APU_FLOAT_MIX
   //线性近似
-  float pulse_out = 0.00752 * ((int64_t)mOutputs[0] + mOutputs[1]);
-  float tnd_out =
-      0.00851 * mOutputs[2] + 0.00494 * mOutputs[3] + 0.00335 * mOutputs[4];
-  // if ((float)(pulse_out + tnd_out) > 1.f)
-  //{
-  //	DebugPrintf("square_out + tnt_output:%f\n", pulse_out + tnd_out);
-  //}
-  float outputf = (float)(pulse_out + tnd_out);
+  float square_out = 0.00752 * ((int64_t)pulse1 + pulse2);
+  float tnd_out = 0.00851 * triangle + 0.00494 * noise + 0.00335 * dmc;
+#endif  // APU_FLOAT_MIX
 
-#endif
-
+  float outputf = (float)(square_out + tnd_out);
   outputf *= 32767.f;
   static float maxv = -1e30, minv = 1e30;
   if (maxv < outputf || minv > outputf) {
@@ -208,17 +204,16 @@ uint8_t APU::MakeSamples(uint32_t cpuCycle) {
   pulses_[1].UpdateState();
   triangle_.UpdateState();
   noise_.UpdateState();
-#if 0
+#ifdef APU_MAKE_CYCLE
   static int remnantsCycle = 0;
-	const uint32_t nSampleSize = (remnantsCycle + cpuCycle) / kCpuCyclePerSample;
-	remnantsCycle = (remnantsCycle + cpuCycle) - nSampleSize * kCpuCyclePerSample;
-	Sample* sample = &output_samples_;
-	sample->size = nSampleSize;
-#else
+  const uint32_t nSampleSize = (remnantsCycle + cpuCycle) / kCpuCyclePerSample;
+  remnantsCycle = (remnantsCycle + cpuCycle) - nSampleSize * kCpuCyclePerSample;
+#else   // APU_MAKE_CYCLE
   const uint32_t nSampleSize = 245;
+#endif  // APU_MAKE_CYCLE
+
   auto &sample = output_samples_;
   sample.resize(nSampleSize);
-#endif
   for (size_t i = 0; i < nSampleSize; i++) {
     sample[i] = SoundMixer(pulses_[0].MakeSamples(),   // input 1
                            pulses_[1].MakeSamples(),   // input 2

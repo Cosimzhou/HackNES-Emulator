@@ -27,6 +27,7 @@ void Emulator::Reset() {
   cpu_.Reset();
   ppu_.Reset();
   apu_.Reset();
+  bus_.Reset();
   cycleTimer_ = std::chrono::high_resolution_clock::now();
   elapsedTime_ = cycleTimer_ - cycleTimer_;
 }
@@ -64,6 +65,7 @@ bool Emulator::HardwareSetup() {
   }
 
   record_.setFinishCallback([&]() {
+    OnPause();
     workMode_ = RECORDING;
     emulatorScreen_->setTip("Continue to play");
   });
@@ -166,10 +168,13 @@ void Emulator::ToggleWorkMode() {
 void Emulator::HintText(const std::string &text) {
   emulatorScreen_->setTip(text);
 }
+
+void Emulator::LostFocus() { emulatorSpeaker_->Stop(); }
+void Emulator::GetFocus() { emulatorSpeaker_->Play(); }
 void Emulator::Pause() {}
 void Emulator::Resume() {}
-void Emulator::OnPause() { emulatorSpeaker_->Stop(); }
-void Emulator::OnResume() { emulatorSpeaker_->Play(); }
+void Emulator::OnPause() {}
+void Emulator::OnResume() {}
 void Emulator::setVideoHeight(int height) {
   if (height < 0) return;
   screenScale_ = height / float(NESVideoHeight);
@@ -211,7 +216,8 @@ bool Emulator::LoadCartridge(const std::string &rom_path) {
 void Emulator::setCartridge(const Cartridge &cartridge) {
   cartridge_ = cartridge;
 
-  goldfinger_.LoadFile(cartridge_.nes_path() + ".cht");
+  std::string path = cartridge_.nes_path();
+  goldfinger_.LoadFile(path + ".cht");
 }
 
 void Emulator::SetRecordMode(bool replay, const std::string &record_file) {
@@ -251,8 +257,10 @@ void Emulator::DebugDump() {
 void Emulator::Save(std::ostream &os) {
   WriteNum(os, kSaveDocMark);
   WriteNum(os, 1);
+  Write(os, Helper::tag());
 
   // Operations recording
+  record_.setTopCycle(cpu_.clock_cycles());
   record_.Save(os);
 
   // Member variable
@@ -281,6 +289,12 @@ void Emulator::Restore(std::istream &is) {
     return;
   }
 
+  std::string tag;
+  Read(is, tag);
+  if (tag != Helper::tag()) {
+    LOG(ERROR) << "[CAUTION] tag: " << tag << " != " << Helper::tag();
+  }
+
   // Operations recording
   record_.Restore(is);
   if (workMode_ == REPLAY) return;
@@ -296,6 +310,10 @@ void Emulator::Restore(std::istream &is) {
   apu_.Restore(is);
   // Cartridge cartridge_;
   mapper_->Restore(is);
+
+  // Pause for giving player a reaction tolerance
+  pausing_ = true;
+  FrameRefresh();
 }
 
 }  // namespace hn

@@ -54,6 +54,7 @@ class PPU : public Serialize {
   void vBlank();
 
   void renderInScanline();
+  void imageOutput();
 
  private:
   Byte read(Address addr);

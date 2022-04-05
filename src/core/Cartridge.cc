@@ -4,6 +4,7 @@
 #include <string>
 
 #include "glog/logging.h"
+#include "utils.h"
 
 //
 //
@@ -138,6 +139,17 @@ bool Cartridge::loadFromFile(std::string path) {
 
   LOG(INFO) << "PRG ROM size: " << (PRG_ROM_.size() >> 10)
             << "KB, CHR ROM size: " << (CHR_ROM_.size() >> 10) << "KB.";
+
+  size_t pos = path.find_last_of("/\\");
+  pos = (pos == std::string::npos) ? 0 : pos + 1;
+  std::string tag = path.substr(pos);
+
+  pos = tag.find_last_of(".");
+  if (pos != std::string::npos) {
+    tag = tag.substr(0, pos);
+  }
+
+  Helper::setTag(tag);
 
   return true;
 }

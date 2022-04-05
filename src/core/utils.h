@@ -11,7 +11,18 @@ class Helper {
   static std::string NewFileName(const std::string &hint);
 
   static std::string Timemark();
-  static std::string SequenceImageName(const std::string &hint);
+  static std::string SequenceImageName();
+  static std::string GenSoundRecordName();
+
+  static std::string rootPath();
+  static void setRootPath(const std::string &rootPath);
+
+  static std::string tag();
+  static void setTag(const std::string &tag);
+
+ private:
+  static std::string root_path_;
+  static std::string tag_;
 };
 
 extern void parseControllerConf(std::string filepath, JoypadInputConfig &p1,

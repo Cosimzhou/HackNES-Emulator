@@ -98,8 +98,8 @@ void PatternViewer::UpdateImage() {
   auto maskIndex = kMaskColorPatternIndice[colorPattern_];
   auto& vrom = *vRom_;
 
-  LOG(INFO) << vrom.size() << " ppu mem size: " << pictureBuffer_.size() << "x"
-            << pictureBuffer_[0].size();
+  VLOG(3) << vrom.size() << " ppu mem size: " << pictureBuffer_.size() << "x"
+          << pictureBuffer_[0].size();
 
   size_t cellSize = vrom.size() / kBytesInOneSprite;
   for (size_t cell = pageNum_ * kTilesInOnePage, line = 0;
@@ -136,7 +136,7 @@ inline size_t PatternViewer::pageCount() const {
 }
 
 void PatternViewer::nextPage() {
-  if (pageNum_ + 1 < pageCount()) {
+  if (pageNum_ + 2 < pageCount()) {
     pageNum_++;
 
     char buff[1024];

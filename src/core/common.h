@@ -109,6 +109,20 @@ class Serialize {
     is.read(reinterpret_cast<char*>(&data), sizeof(data));
     return data;
   }
+
+  void Write(std::ostream& os, const std::string& data) {
+    uint32_t size = static_cast<uint32_t>(data.size());
+    os.write(reinterpret_cast<const char*>(&size), sizeof(size));
+    os.write(reinterpret_cast<const char*>(data.c_str()), size);
+  }
+
+  void Read(std::istream& is, std::string& data) {
+    uint32_t size;
+    is.read(reinterpret_cast<char*>(&size), sizeof(size));
+    std::vector<char> buff(size + 1, 0);
+    is.read(reinterpret_cast<char*>(buff.data()), size);
+    data = buff.data();
+  }
 };
 
 class DebugObject {

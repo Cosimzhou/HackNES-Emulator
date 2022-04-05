@@ -5,6 +5,8 @@
 namespace hn {
 class VirtualScreenSfml : public VirtualScreen, public sf::Drawable {
  public:
+  VirtualScreenSfml() : VirtualScreen(), sf::Drawable() {}
+
   virtual void create(unsigned int width, unsigned int height, float pixel_size,
                       Color color);
   virtual void setPixel(std::size_t x, std::size_t y, Color color);

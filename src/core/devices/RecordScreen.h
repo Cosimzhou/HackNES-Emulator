@@ -20,7 +20,7 @@ class RecordScreen : public VirtualScreen {
   VirtualScreen* OutScreen();
 
  protected:
-  void Save();
+  void SaveBMP();
 
  private:
   Memory buffer_;

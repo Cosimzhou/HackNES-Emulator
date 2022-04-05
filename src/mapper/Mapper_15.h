@@ -24,6 +24,7 @@ class Mapper_15 : public Mapper {
   std::vector<FileAddress> bankAddr_;
   Byte prgRom_;
   bool chrVRam_;
+  bool protectCHR_;
 };
 
 }  // namespace hn

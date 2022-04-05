@@ -31,6 +31,7 @@ file(GLOB SOURCES
 
 # Copy keybindings.conf
 file(COPY keybindings.conf DESTINATION .)
+file(MAKE_DIRECTORY record/tmp record/save record/pics record/snds)
 
 # Specify include Directory
 include_directories("${PROJECT_SOURCE_DIR}/include")
@@ -83,3 +84,5 @@ set_property(TARGET HackerNES PROPERTY CXX_STANDARD 11)
 set_property(TARGET HackerNES PROPERTY CXX_STANDARD_REQUIRED ON)
 
 target_link_libraries(HackerNES)
+
+#install(DIRECTORY DESTINATION ${directory})

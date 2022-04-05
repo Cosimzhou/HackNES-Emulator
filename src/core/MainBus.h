@@ -46,6 +46,7 @@ class MainBus : public Serialize {
   PPU *ppu() const;
   Mapper *mapper() const;
 
+  void Reset();
   void Tick();
   void DebugDump();
   std::string getPageContent(Address page);

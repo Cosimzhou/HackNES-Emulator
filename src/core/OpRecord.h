@@ -26,6 +26,8 @@ class OperatingRecord : public Serialize {
   virtual void Save(std::ostream& os) override;
   virtual void Restore(std::istream& is) override;
 
+  void setTopCycle(size_t tc) { top_cycle_ = tc; }
+
  private:
   std::vector<std::set<size_t>> joypad_record_;
   std::string file_path_;

@@ -56,6 +56,7 @@ void OperatingRecord::Save(std::ostream &os) {
   WriteNum(os, joypad_record_.size());
   WriteNum(os, joypad_record_[0].size());
   WriteNum(os, joypad_record_[1].size());
+  WriteLNum(os, top_cycle_);
 
   for (int i = 0; i < 2; i++) {
     for (auto rcd : joypad_record_[i]) {
@@ -77,18 +78,16 @@ void OperatingRecord::Restore(std::istream &is) {
 
   auto size1 = ReadNum(is);
   size = ReadNum(is);
+  top_cycle_ = ReadLNum(is);
 
-  top_cycle_ = 0;
   while (size1-- > 0) {
     size_t cycle = ReadLNum(is);
     joypad_record_[0].emplace(cycle);
-    top_cycle_ = std::max(top_cycle_, cycle);
   }
 
   while (size-- > 0) {
     size_t cycle = ReadLNum(is);
     joypad_record_[1].emplace(cycle);
-    top_cycle_ = std::max(top_cycle_, cycle);
   }
 }
 

@@ -51,7 +51,7 @@ const Byte kBmpFileHeader[] = {
 
 RecordScreen::RecordScreen(const std::string &file_path)
     : file_path_(file_path) {}
-RecordScreen::~RecordScreen() { Save(); }
+RecordScreen::~RecordScreen() { SaveBMP(); }
 
 void RecordScreen::create(unsigned int width, unsigned int height,
                           float pixel_size, Color color) {
@@ -80,7 +80,7 @@ void RecordScreen::SetOutScreen(VirtualScreen *screen) {
 
 VirtualScreen *RecordScreen::OutScreen() { return screen_.get(); }
 
-void RecordScreen::Save() {
+void RecordScreen::SaveBMP() {
   std::ofstream file(file_path_);
   file.write(reinterpret_cast<const char *>(&kBmpFileHeader[0]),
              sizeof(kBmpFileHeader));

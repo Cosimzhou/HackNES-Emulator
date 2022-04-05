@@ -234,16 +234,10 @@ void PPU::postRender() {
   cycle_ = 0;
   pipelineState_ = VerticalBlank;
 
-  if (screen_) {
-    for (int x = 0; x < pictureBuffer_.size(); ++x) {
-      for (int y = 0; y < pictureBuffer_[0].size(); ++y) {
-        screen_->setPixel(x, y, pictureBuffer_[x][y]);
-      }
-    }
-  }
+  imageOutput();
 
-    // Should technically be done at first dot of VBlank, but this is close
-    // enough
+  // Should technically be done at first dot of VBlank, but this is close
+  // enough
 #ifdef PPUSTATUS_IN_BYTE
   SET_BIT(ppu_status_, 0x80);
 #else   // PPUSTATUS_IN_BYTE
@@ -251,6 +245,16 @@ void PPU::postRender() {
 #endif  // PPUSTATUS_IN_BYTE
   if (GEN_INTERRUPT()) {
     mainBus_.cpu()->TryNMI();
+  }
+}
+
+void PPU::imageOutput() {
+  if (screen_) {
+    for (int x = 0; x < pictureBuffer_.size(); ++x) {
+      for (int y = 0; y < pictureBuffer_[0].size(); ++y) {
+        screen_->setPixel(x, y, pictureBuffer_[x][y]);
+      }
+    }
   }
 }
 
@@ -419,12 +423,11 @@ void PPU::doDMA(const Byte *page_ptr) {
 void PPU::control(Byte ctrl) {
 #ifdef PPUCONTROL_IN_BYTE
   ppu_control_ = ctrl;
-#else  // PPUCONTROL_IN_BYTE
+#else   // PPUCONTROL_IN_BYTE
   generateInterrupt_ = ctrl & 0x80;
   longSprites_ = ctrl & 0x20;
   bgPage_ = static_cast<CharacterPage>(!!(ctrl & 0x10));
   sprPage_ = static_cast<CharacterPage>(!!(ctrl & 0x8));
-
 #endif  // PPUCONTROL_IN_BYTE
 
   dataAddrIncrement_ = (ctrl & 0x4) ? 0x20 : 1;
@@ -660,6 +663,8 @@ void PPU::Restore(std::istream &is) {
   bool vblank_;
   bool sprZeroHit_;
 #endif  // PPUSTATUS_IN_BYTE
+
+  imageOutput();
 }
 
 }  // namespace hn

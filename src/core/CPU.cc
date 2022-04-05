@@ -35,7 +35,7 @@ void CPU::Reset() { Reset(readAddress(ResetVector)); }
 
 void CPU::Reset(Address start_addr) {
   skipCycles_ = cycles_ = 0;
-  reg_A_ = reg_X_ = reg_Y_ = 0;
+  reg_A_ = reg_X_ = reg_Y_ = irq_flag_ = 0;
 #ifdef PSW_IN_BYTE
   psw_ = static_cast<Byte>(StatusFlag::INIT_FLAG);
 #else   // PSW_IN_BYTE

@@ -13,6 +13,7 @@ void Mapper_15::Reset() {
   bankAddr_[2] = 2;
   bankAddr_[3] = 3;
   prgBankMode_ = 0;
+  protectCHR_ = true;
 
   ResetVRam();
   chrVRam_ = true;
@@ -24,6 +25,7 @@ void Mapper_15::writePRG(Address addr, Byte data) {
   prgBankMode_ = addr & 3;
   Byte swap = (data & 0x80) >> 7;
   FileAddress taddr = data & 0x3f;
+  protectCHR_ = true;
 
   switch (prgBankMode_) {
     case 0:
@@ -33,6 +35,7 @@ void Mapper_15::writePRG(Address addr, Byte data) {
       bankAddr_[3] = ((taddr + 1) << 1) + (1 ^ swap);
       break;
     case 1:
+      protectCHR_ = false;
       chrVRam_ = true;
     case 3:
       bankAddr_[2] = (taddr << 1) + swap;
@@ -40,6 +43,7 @@ void Mapper_15::writePRG(Address addr, Byte data) {
       break;
     case 2:
       chrVRam_ = true;
+      protectCHR_ = false;
       bankAddr_[0] = (taddr << 1) + swap;
       bankAddr_[1] = (taddr << 1) + swap;
       bankAddr_[2] = (taddr << 1) + swap;
@@ -78,7 +82,7 @@ Byte Mapper_15::readCHR(Address addr) {
 
 void Mapper_15::writeCHR(Address addr, Byte value) {
   if (chrVRam_) {
-    vRam_[addr & 0x1fff] = value;
+    if (!protectCHR_) vRam_[addr & 0x1fff] = value;
   } else {
     LOG(ERROR) << "No chr rom allowed to write " << std::hex << addr << " "
                << +value;

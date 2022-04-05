@@ -97,9 +97,9 @@ class Cartridge {
  private:
   CartridgeHeader header_;
 
-  std::vector<Byte> trainer_;
-  std::vector<Byte> PRG_ROM_;
-  std::vector<Byte> CHR_ROM_;
+  Memory trainer_;
+  Memory PRG_ROM_;
+  Memory CHR_ROM_;
   Byte nameTableMirroring_;
   Byte mapperNumber_;
   bool extendedRAM_;
