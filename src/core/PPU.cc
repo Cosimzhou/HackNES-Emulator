@@ -198,11 +198,12 @@ void PPU::render() {
     // but (I think) it shouldn't hurt any games if this is done here
     scanlineSprites_.resize(0);
     int range = LONG_SPRITE() ? 16 : 8;
-    for (std::size_t i = oamDataAddress_ / 4; i < 64; ++i) {
-      auto diff = scanline_ - spriteMemory_[i * 4];
+    for (std::size_t i = oamDataAddress_ >> 2; i < 64; ++i) {
+      int diff = scanline_ -
+                 reinterpret_cast<const Sprite *>(spriteMemory_.data())[i].y;
       if (0 <= diff && diff < range) {
         scanlineSprites_.push_back(i);
-        if (scanlineSprites_.size() >= 8) break;
+        // if (scanlineSprites_.size() >= 8) break;
       }
     }
 
@@ -259,8 +260,8 @@ void PPU::imageOutput() {
 }
 
 void PPU::renderInScanline() {
-#define READ_PIXEL(clr, addr, offset) \
-  clr = ((read(addr) >> offset) & 1) | (((read(addr + 8) >> offset) & 1) << 1)
+#define READ_PIXEL(addr, offset) \
+  (((read(addr) >> offset) & 1) | (((read(addr + 8) >> offset) & 1) << 1))
 
   Byte bgColor = 0, sprColor = 0;
   bool bgOpaque = false, sprOpaque = true;
@@ -270,7 +271,7 @@ void PPU::renderInScanline() {
   int y = scanline_;
 
   if (SHOW_BACKGROUND()) {
-    auto x_fine = 7 - ((fineXScroll_ + x) % 8);
+    auto x_fine = 7 - ((fineXScroll_ + x) & 7);
     if (SHOW_EDGE_BACKGROUND() || x >= 8) {
       // fetch tile
       Address addr = 0x2000 | (dataAddress_ & 0x0FFF);  // mask off fine y
@@ -296,7 +297,7 @@ void PPU::renderInScanline() {
       addr = (tile << 4) | ((dataAddress_ >> 12) & 0x7);
       if (HIGH_BG_PAGE()) addr |= 1 << 12;
       // Get the corresponding bit determined by x_fine from the right
-      READ_PIXEL(bgColor, addr, x_fine);
+      bgColor = READ_PIXEL(addr, x_fine);
 
       // flag used to calculate final pixel with the sprite pixel
       bgOpaque = bgColor;
@@ -324,7 +325,7 @@ void PPU::renderInScanline() {
     if (!x_fine) {
       if (TEST_BITS(dataAddress_, 0x001F)) {  // if coarse X == 31
         CLR_BIT(dataAddress_, 0x001F);        // coarse X = 0
-        dataAddress_ ^= 0x0400;               // switch horizontal nametable
+        dataAddress_ ^= 0x0400;               //? switch horizontal nametable
       } else {
         ++dataAddress_;  // increment coarse X
       }
@@ -333,14 +334,15 @@ void PPU::renderInScanline() {
 
   if (SHOW_SPRITES() && (SHOW_EDGE_SPRITES() || x >= 8)) {
     for (auto i : scanlineSprites_) {
-      Byte *sprPtr = spriteMemory_.data() + (i * 4);
-      int spr_x = x - sprPtr[3];
+      const Sprite &sprPtr =
+          reinterpret_cast<const Sprite *>(spriteMemory_.data())[i];
+      int spr_x = x - sprPtr.x;
       if (0 > spr_x || spr_x >= 8) continue;
 
-      int spr_y = y - sprPtr[0] - 1;
+      int spr_y = y - sprPtr.y - 1;
       int length = LONG_SPRITE() ? 16 : 8;
       int x_shift = 7 - (spr_x % 8), y_offset = spr_y % length;
-      Byte tile = sprPtr[1], attribute = sprPtr[2];
+      Byte tile = sprPtr.tile, attribute = sprPtr.attr;
 
       // If flipping horizontally
       if (TEST_BITS(attribute, 0x40)) x_shift ^= 7;
@@ -349,10 +351,8 @@ void PPU::renderInScanline() {
 
       Address addr = 0;
       if (LONG_SPRITE()) {
-        // 8x16 sprites
-
-        // bit-3 is one if it is the bottom tile of the sprite, multiply by
-        // two to get the next pattern
+        // 8x16 sprites.  bit-3 is one if it is the bottom tile of the sprite,
+        // multiply by two to get the next pattern
         y_offset = (y_offset & 7) | ((y_offset & 8) << 1);
         addr = (tile >> 1) * 32 + y_offset;
         addr |= (tile & 1) << 12;  // Bank 0x1000 if bit-0 is high
@@ -361,7 +361,7 @@ void PPU::renderInScanline() {
         if (HIGH_SPR_PAGE()) addr += 0x1000;
       }
 
-      READ_PIXEL(sprColor, addr, x_shift);
+      sprColor = READ_PIXEL(addr, x_shift);
 
       if ((sprOpaque = sprColor) != 0) {
         // Select sprite palette
@@ -534,7 +534,7 @@ void PPU::DebugDump() {
 #ifdef PPUCONTROL_IN_BYTE
             << " control:" << +ppu_control_
 #endif  // PPUCONTROL_IN_BYTE
-            << " @" << tempAddress_ << " dataAddr: $" << dataAddress_
+            << " $" << tempAddress_ << " dataAddr: $" << dataAddress_
             << " 1stW: " << std::boolalpha << firstWrite_
             << " xScl:" << +fineXScroll_ << " addrBuf:" << +dataBuffer_
             << " oamAddr:" << +oamDataAddress_;

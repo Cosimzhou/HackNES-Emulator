@@ -79,12 +79,12 @@ class PPU : public Serialize {
 
   Byte oamDataAddress_;
 
-  struct {
+  typedef struct {
     Byte y;
     Byte tile;
     Byte attr;
     Byte x;
-  } Sprites_[64];
+  } Sprite;
 
   // Setup flags and variables
   // Control byte
