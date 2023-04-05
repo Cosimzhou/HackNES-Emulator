@@ -169,8 +169,14 @@ void Emulator::HintText(const std::string &text) {
   emulatorScreen_->setTip(text);
 }
 
-void Emulator::LostFocus() { emulatorSpeaker_->Stop(); }
-void Emulator::GetFocus() { emulatorSpeaker_->Play(); }
+void Emulator::LostFocus() {
+  emulatorSpeaker_->Stop();
+  HintText("Lost focus and paused");
+}
+void Emulator::GetFocus() {
+  emulatorSpeaker_->Play();
+  HintText("Got focus");
+}
 void Emulator::Pause() {}
 void Emulator::Resume() {}
 void Emulator::OnPause() {}
