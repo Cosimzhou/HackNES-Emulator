@@ -11,9 +11,8 @@
 #include "utils.h"
 
 namespace hn {
-
 EmulatorSfml::EmulatorSfml() : Emulator(), sfScreen_(new VirtualScreenSfml) {
-  if (true) {
+  if (record_mode_) {
     emulatorScreen_.reset(new RecordScreen(Helper::SequenceImageName()));
     dynamic_cast<RecordScreen*>(emulatorScreen_.get())->SetOutScreen(sfScreen_);
 

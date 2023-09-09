@@ -25,6 +25,7 @@ class EmulatorSfml : public Emulator {
   void OnPauseToggle();
 
  private:
+  bool record_mode_ = true;
   sf::RenderWindow window_;
 
   class VirtualScreenSfml* sfScreen_;
